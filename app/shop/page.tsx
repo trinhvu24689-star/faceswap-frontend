@@ -16,10 +16,22 @@ type PaymentHistoryItem = {
   created_at?: string;
 };
 
-const PACKS = [
-  { id: "pack_36", label: "Gói 36❄️", credits: 36, priceText: "26.000đ", priceVnd: 26000 },
-  { id: "pack_70", label: "Gói 70❄️", credits: 70, priceText: "52.000đ", priceVnd: 52000 },
-  { id: "pack_150", label: "Gói 150❄️", credits: 150, priceText: "125.000đ", priceVnd: 125000 },
+type CreditPack = {
+  id: string;
+  label: string;
+  credits: number;
+  priceText: string;
+  priceVnd: number;
+  backendId?: string; // ID gửi cho backend (stripe)
+};
+
+const PACKS: CreditPack[] = [
+  // 3 gói này map về backend cũ: pack_small / pack_medium / pack_big
+  { id: "pack_36", label: "Gói 36❄️", credits: 36, priceText: "26.000đ", priceVnd: 26000, backendId: "pack_small" },
+  { id: "pack_70", label: "Gói 70❄️", credits: 70, priceText: "52.000đ", priceVnd: 52000, backendId: "pack_medium" },
+  { id: "pack_150", label: "Gói 150❄️", credits: 150, priceText: "125.000đ", priceVnd: 125000, backendId: "pack_big" },
+
+  // Các gói dưới CHƯA map backend, nên tạm chưa cho bấm mua (button disabled).
   { id: "pack_200", label: "Gói 200❄️", credits: 200, priceText: "185.000đ", priceVnd: 185000 },
   { id: "pack_400", label: "Gói 400❄️", credits: 400, priceText: "230.000đ", priceVnd: 230000 },
   { id: "pack_550", label: "Gói 550❄️", credits: 550, priceText: "375.000đ", priceVnd: 375000 },
@@ -32,7 +44,6 @@ const PACKS = [
   { id: "pack_10000", label: "Gói 10.000❄️", credits: 10000, priceText: "5.000.000đ", priceVnd: 5000000 },
 ];
 
-// 👉 Component chính
 function ShopPageContent() {
   const [userId, setUserId] = useState<string | null>(null);
 
@@ -77,7 +88,7 @@ function ShopPageContent() {
   };
 
   // ========== CHECKOUT STRIPE ==========
-  const handleCheckout = async (packId: string) => {
+  const handleCheckout = async (backendPackId: string) => {
     if (!userId) {
       setError(
         "Không tìm thấy tài khoản tạm, bạn hãy quay lại trang chính chạy lại giúp anh nha 😢"
@@ -95,7 +106,7 @@ function ShopPageContent() {
           "Content-Type": "application/json",
           "x-user-id": userId,
         },
-        body: JSON.stringify({ pack_id: packId }),
+        body: JSON.stringify({ pack_id: backendPackId }),
       });
 
       let data: any = {};
@@ -433,6 +444,8 @@ function ShopPageContent() {
 
                 const bestDeal = p.id === "pack_150" || p.id === "pack_550";
 
+                const canCheckout = !!p.backendId;
+
                 return (
                   <div
                     key={p.id}
@@ -465,8 +478,12 @@ function ShopPageContent() {
                       )}
                     </div>
                     <button
-                      disabled={loadingCheckout}
-                      onClick={() => handleCheckout(p.id)}
+                      disabled={loadingCheckout || !canCheckout}
+                      onClick={() => {
+                        if (p.backendId) {
+                          handleCheckout(p.backendId);
+                        }
+                      }}
                       className="px-3 py-2 rounded-xl bg-lime-400 text-black text-[12px] font-semibold disabled:bg-slate-500 disabled:text-slate-200"
                     >
                       {couponPercent > 0
@@ -633,7 +650,6 @@ function ShopPageContent() {
   );
 }
 
-// 👉 Wrapper
 function ResponsiveContainer({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen w-full flex justify-center">
@@ -644,7 +660,6 @@ function ResponsiveContainer({ children }: { children: React.ReactNode }) {
   );
 }
 
-// 👉 Default export
 export default function ShopPage() {
   return (
     <ResponsiveContainer>
