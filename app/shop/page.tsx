@@ -32,7 +32,7 @@ const PACKS = [
   { id: "pack_10000", label: "Gói 10.000❄️", credits: 10000, priceText: "5.000.000đ", priceVnd: 5000000 },
 ];
 
-// 👉 Component chính, KHÔNG export default, giữ nguyên toàn bộ UI/text của bé
+// 👉 Component chính
 function ShopPageContent() {
   const [userId, setUserId] = useState<string | null>(null);
 
@@ -155,9 +155,10 @@ function ShopPageContent() {
 
       if (!res.ok) {
         setFreeMessage(null);
-        throw new Error(
+        setError(
           data?.detail || `Không nhận được Bông Tuyết miễn phí (${res.status})`
         );
+        return;
       }
 
       const added = typeof data?.added === "number" ? data.added : 0;
@@ -424,7 +425,7 @@ function ShopPageContent() {
             </div>
 
             <div className="space-y-3">
-              {PACKS.map((p, idx) => {
+              {PACKS.map((p) => {
                 const finalPrice =
                   couponPercent > 0
                     ? Math.round(p.priceVnd * (1 - couponPercent / 100))
@@ -632,7 +633,7 @@ function ShopPageContent() {
   );
 }
 
-// 👉 Wrapper responsive cho mọi thiết bị, không đụng text của bé
+// 👉 Wrapper
 function ResponsiveContainer({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen w-full flex justify-center">
@@ -643,7 +644,7 @@ function ResponsiveContainer({ children }: { children: React.ReactNode }) {
   );
 }
 
-// 👉 Chỉ CÒN 1 default export duy nhất
+// 👉 Default export
 export default function ShopPage() {
   return (
     <ResponsiveContainer>
