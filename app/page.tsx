@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import HamburgerMenu from "@/components/HamburgerMenu";
 
 const API_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "https://faceswap-server.onrender.com";
@@ -27,9 +28,6 @@ export default function Home() {
   const [resultImg, setResultImg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // trạng thái mở/đóng menu
-  const [menuOpen, setMenuOpen] = useState(false);
 
   // ====== USER + CREDITS ======
   const [userId, setUserId] = useState<string | null>(null);
@@ -316,7 +314,7 @@ export default function Home() {
   };
 
   // =================== LỊCH SỬ THANH TOÁN ===================
-const openPayHistory = async () => {
+  const openPayHistory = async () => {
     setShowPayHistory(true);
     if (!userId) return;
 
@@ -359,15 +357,6 @@ const openPayHistory = async () => {
     }
   };
 
-  // hàm cuộn tới section theo id (cho menu trượt)
-  const scrollToSection = (id: string) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-    setMenuOpen(false);
-  };
-
   return (
     <div
       className="relative flex justify-center bg-[#111]"
@@ -379,63 +368,6 @@ const openPayHistory = async () => {
     >
       {/* BG nhẹ cho đỡ trống */}
       <div className="fixed inset-0 -z-10 bg-gradient-to-b from-black via-[#121212] to-[#050505]" />
-
-      {/* MENU trượt từ trái ra (giữ luật cũ) */}
-      {menuOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/70"
-          onClick={() => setMenuOpen(false)}
-        >
-          <aside
-            className="absolute left-0 top-0 bottom-0 w-64 max-w-[80vw] bg-[#101010] border-r border-white/10 flex flex-col"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-xl bg-lime-400/90 flex items-center justify-center text-[11px] font-bold text-black">
-                  Menu
-                </div>
-                <span className="text-xs font-semibold text-slate-50">
-                  ZenitSwap Menu
-                </span>
-              </div>
-              <button
-                className="text-xs text-slate-300 hover:text-white"
-                onClick={() => setMenuOpen(false)}
-              >
-                ✕
-              </button>
-            </div>
-
-            <nav className="flex-1 overflow-y-auto py-3 text-sm">
-              <button
-                className="w-full text-left px-4 py-2.5 text-slate-100 hover:bg-slate-800/70"
-                onClick={() => scrollToSection("top-section")}
-              >
-                Trang chủ
-              </button>
-              <button
-                className="w-full text-left px-4 py-2.5 text-slate-100 hover:bg-slate-800/70"
-                onClick={() => scrollToSection("steps-section")}
-              >
-                Shop Bông Tuyết TD
-              </button>
-              <button
-                className="w-full text-left px-4 py-2.5 text-slate-100 hover:bg-slate-800/70"
-                onClick={() => scrollToSection("result-section")}
-              >
-                Lịch Sử Ảnh
-              </button>
-              <button
-                className="w-full text-left px-4 py-2.5 text-slate-100 hover:bg-slate-800/70"
-                onClick={() => scrollToSection("footer-section")}
-              >
-                Thông tin & liên hệ
-              </button>
-            </nav>
-          </aside>
-        </div>
-      )}
 
       {/* MAIN CONTAINER giống mobile Vidmage */}
       <main
@@ -483,13 +415,7 @@ const openPayHistory = async () => {
               ⟳
             </button>
 
-            <button
-              type="button"
-              className="h-7 w-7 rounded-full bg-[#222] flex items-center justify-center text-lg"
-              onClick={() => setMenuOpen(true)}
-            >
-              ☰
-            </button>
+            <HamburgerMenu />
           </div>
         </header>
 
@@ -960,7 +886,7 @@ const openPayHistory = async () => {
                       <span className="text-[10px] text-slate-400">
                         {p.amount
                           ? `${p.amount.toLocaleString("vi-VN")}đ`
-                          : "Số tiền không rõ"}
+                          : "Số tiền không rõ`}
                         {" • "}
                         {p.provider || "Stripe"}
                       </span>

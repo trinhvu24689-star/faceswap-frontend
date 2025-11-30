@@ -182,10 +182,10 @@ function ShopPageContent() {
     }
 
     if (code === "ZENIT97") {
-      setCouponPercent(97);
+      setCouponPercent(20);
       setCouponMessage("Đã áp dụng mã ZENIT97: Giảm 20% giá gói (hiển thị) ✨");
     } else if (code === "ZENIT999") {
-      setCouponPercent(999);
+      setCouponPercent(9,99);
       setCouponMessage("Đã áp dụng mã ZENIT999: Giảm 9,99% giá gói (hiển thị) 🔥");
     } else {
       setCouponPercent(0);
