@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { User } from "lucide-react"; // ⬅️ chỉ thêm dòng này
 
 export default function HamburgerMenu() {
   const [open, setOpen] = useState(false);
@@ -68,6 +69,15 @@ export default function HamburgerMenu() {
               className="w-full text-left px-3 py-2 hover:bg-white/10 rounded-lg"
             >
               🛍️ Shop Bông Tuyết
+            </button>
+
+            {/* TRUNG TÂM TÀI KHOẢN */}
+            <button
+              onClick={() => (window.location.href = "/user-center")}
+              className="w-full text-left px-3 py-2 hover:bg-white/10 rounded-lg flex items-center gap-2"
+            >
+              <User className="w-4 h-4" />
+              <span>Trung tâm tài khoản</span>
             </button>
 
           </div>
