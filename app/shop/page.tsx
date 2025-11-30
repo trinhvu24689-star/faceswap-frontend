@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import ResponsiveContainer from "@/components/ResponsiveContainer";
 
 const API_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "https://faceswap-server.onrender.com";
@@ -33,7 +32,8 @@ const PACKS = [
   { id: "pack_10000", label: "Gói 10.000❄️", credits: 10000, priceText: "5.000.000đ", priceVnd: 5000000 },
 ];
 
-export default function ShopPage() {
+// 👉 Component chính, KHÔNG export default, giữ nguyên toàn bộ UI/text của bé
+function ShopPageContent() {
   const [userId, setUserId] = useState<string | null>(null);
 
   // theme
@@ -627,11 +627,23 @@ export default function ShopPage() {
         <div className={"mt-4 text-[10px] text-center " + mutedText}>
           Shop Bông Tuyết ZenitSwap ❄ — Made with Quang Hổ Master — Zalo: 0856 848 557
         </div>
-      </div>   
+      </div>
     </div>
   );
 }
 
+// 👉 Wrapper responsive cho mọi thiết bị, không đụng text của bé
+function ResponsiveContainer({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-screen w-full flex justify-center">
+      <div className="w-full max-w-[520px] px-3 sm:px-4 md:px-5 lg:px-6 py-4 sm:py-6">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// 👉 Chỉ CÒN 1 default export duy nhất
 export default function ShopPage() {
   return (
     <ResponsiveContainer>
