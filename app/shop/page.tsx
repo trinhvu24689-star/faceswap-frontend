@@ -22,28 +22,26 @@ type CreditPack = {
   credits: number;
   priceText: string;
   priceVnd: number;
-  backendId?: string; // ID gửi cho backend (stripe)
+  backendId?: string;
 };
 
 const PACKS: CreditPack[] = [
-  // 3 gói này map về backend cũ: pack_small / pack_medium / pack_big
-  { id: "pack_36", label: "Gói 36❄️", credits: 36, priceText: "26.000đ", priceVnd: 26000, backendId: "pack_small" },
-  { id: "pack_70", label: "Gói 70❄️", credits: 70, priceText: "52.000đ", priceVnd: 52000, backendId: "pack_medium" },
-  { id: "pack_150", label: "Gói 150❄️", credits: 150, priceText: "125.000đ", priceVnd: 125000, backendId: "pack_big" },
-
-  // Các gói dưới CHƯA map backend, nên tạm chưa cho bấm mua (button disabled).
-  { id: "pack_200", label: "Gói 200❄️", credits: 200, priceText: "185.000đ", priceVnd: 185000 },
-  { id: "pack_400", label: "Gói 400❄️", credits: 400, priceText: "230.000đ", priceVnd: 230000 },
-  { id: "pack_550", label: "Gói 550❄️", credits: 550, priceText: "375.000đ", priceVnd: 375000 },
-  { id: "pack_750", label: "Gói 750❄️", credits: 750, priceText: "510.000đ", priceVnd: 510000 },
-  { id: "pack_999", label: "Gói 999❄️", credits: 999, priceText: "760.000đ", priceVnd: 760000 },
-  { id: "pack_1500", label: "Gói 1.500❄️", credits: 1500, priceText: "1.050.000đ", priceVnd: 1050000 },
-  { id: "pack_2600", label: "Gói 2.600❄️", credits: 2600, priceText: "1.500.000đ", priceVnd: 1500000 },
-  { id: "pack_4000", label: "Gói 4.000❄️", credits: 4000, priceText: "2.400.000đ", priceVnd: 2400000 },
-  { id: "pack_7600", label: "Gói 7.600❄️", credits: 7600, priceText: "3.600.000đ", priceVnd: 3600000 },
-  { id: "pack_10000", label: "Gói 10.000❄️", credits: 10000, priceText: "5.000.000đ", priceVnd: 5000000 },
+  { id: "pack_36", label: "Gói 36❄️", credits: 36, priceText: "26.000đ", priceVnd: 26000, backendId: "pack_36" },
+  { id: "pack_70", label: "Gói 70❄️", credits: 70, priceText: "52.000đ", priceVnd: 52000, backendId: "pack_70" },
+  { id: "pack_150", label: "Gói 150❄️", credits: 150, priceText: "125.000đ", priceVnd: 125000, backendId: "pack_150" },
+  { id: "pack_200", label: "Gói 200❄️", credits: 200, priceText: "185.000đ", priceVnd: 185000, backendId: "pack_200" },
+  { id: "pack_400", label: "Gói 400❄️", credits: 400, priceText: "230.000đ", priceVnd: 230000, backendId: "pack_400" },
+  { id: "pack_550", label: "Gói 550❄️", credits: 550, priceText: "375.000đ", priceVnd: 375000, backendId: "pack_550" },
+  { id: "pack_750", label: "Gói 750❄️", credits: 750, priceText: "510.000đ", priceVnd: 510000, backendId: "pack_750" },
+  { id: "pack_999", label: "Gói 999❄️", credits: 999, priceText: "760.000đ", priceVnd: 760000, backendId: "pack_999" },
+  { id: "pack_1500", label: "Gói 1.500❄️", credits: 1500, priceText: "1.050.000đ", priceVnd: 1050000, backendId: "pack_1500" },
+  { id: "pack_2600", label: "Gói 2.600❄️", credits: 2600, priceText: "1.500.000đ", priceVnd: 1500000, backendId: "pack_2600" },
+  { id: "pack_4000", label: "Gói 4.000❄️", credits: 4000, priceText: "2.400.000đ", priceVnd: 2400000, backendId: "pack_4000" },
+  { id: "pack_7600", label: "Gói 7.600❄️", credits: 7600, priceText: "3.600.000đ", priceVnd: 3600000, backendId: "pack_7600" },
+  { id: "pack_10000", label: "Gói 10.000❄️", credits: 10000, priceText: "5.000.000đ", priceVnd: 5000000, backendId: "pack_10000" },
 ];
 
+// 👉 Component chính, KHÔNG export default, giữ nguyên toàn bộ UI/text của bé
 function ShopPageContent() {
   const [userId, setUserId] = useState<string | null>(null);
 
@@ -88,7 +86,7 @@ function ShopPageContent() {
   };
 
   // ========== CHECKOUT STRIPE ==========
-  const handleCheckout = async (backendPackId: string) => {
+  const handleCheckout = async (packId: string) => {
     if (!userId) {
       setError(
         "Không tìm thấy tài khoản tạm, bạn hãy quay lại trang chính chạy lại giúp anh nha 😢"
@@ -106,7 +104,7 @@ function ShopPageContent() {
           "Content-Type": "application/json",
           "x-user-id": userId,
         },
-        body: JSON.stringify({ pack_id: backendPackId }),
+        body: JSON.stringify({ pack_id: packId }),
       });
 
       let data: any = {};
@@ -166,10 +164,9 @@ function ShopPageContent() {
 
       if (!res.ok) {
         setFreeMessage(null);
-        setError(
+        throw new Error(
           data?.detail || `Không nhận được Bông Tuyết miễn phí (${res.status})`
         );
-        return;
       }
 
       const added = typeof data?.added === "number" ? data.added : 0;
@@ -444,8 +441,6 @@ function ShopPageContent() {
 
                 const bestDeal = p.id === "pack_150" || p.id === "pack_550";
 
-                const canCheckout = !!p.backendId;
-
                 return (
                   <div
                     key={p.id}
@@ -478,12 +473,8 @@ function ShopPageContent() {
                       )}
                     </div>
                     <button
-                      disabled={loadingCheckout || !canCheckout}
-                      onClick={() => {
-                        if (p.backendId) {
-                          handleCheckout(p.backendId);
-                        }
-                      }}
+                      disabled={loadingCheckout}
+                      onClick={() => handleCheckout(p.id)}
                       className="px-3 py-2 rounded-xl bg-lime-400 text-black text-[12px] font-semibold disabled:bg-slate-500 disabled:text-slate-200"
                     >
                       {couponPercent > 0
@@ -650,6 +641,7 @@ function ShopPageContent() {
   );
 }
 
+// 👉 Wrapper responsive cho mọi thiết bị, không đụng text của bé
 function ResponsiveContainer({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen w-full flex justify-center">
@@ -660,6 +652,7 @@ function ResponsiveContainer({ children }: { children: React.ReactNode }) {
   );
 }
 
+// 👉 Chỉ CÒN 1 default export duy nhất
 export default function ShopPage() {
   return (
     <ResponsiveContainer>
