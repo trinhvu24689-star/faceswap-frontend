@@ -886,7 +886,7 @@ export default function Home() {
                       <span className="text-[10px] text-slate-400">
                         {p.amount
                           ? `${p.amount.toLocaleString("vi-VN")}đ`
-                          : "Số tiền không rõ`}
+                          : "Số tiền không rõ"}
                         {" • "}
                         {p.provider || "Stripe"}
                       </span>
