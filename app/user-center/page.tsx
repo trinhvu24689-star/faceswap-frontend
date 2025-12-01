@@ -6,24 +6,33 @@ const API_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL ||
   "https://faceswap-server.onrender.com";
 
+const LOCAL_KEY = "faceswap_user_id";
+
 type Profile = {
   user_id: string;
   credits: number;
   created_at?: string | null;
 };
 
-const LOCAL_KEY = "faceswap_user_id";
-
 export default function UserCenterPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [credits, setCredits] = useState<number | null>(null);
   const [createdAt, setCreatedAt] = useState<string | null>(null);
 
-  const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
-
   const [inputId, setInputId] = useState("");
   const [message, setMessage] = useState<string | null>(null);
+
+  // Khởi tạo: nếu có faceswap_user_id thì load profile
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(LOCAL_KEY);
+      if (!stored) return;
+      fetchProfile(stored);
+    } catch (err) {
+      console.error("Init user center error:", err);
+    }
+  }, []);
 
   async function fetchProfile(id: string) {
     try {
@@ -34,7 +43,11 @@ export default function UserCenterPage() {
       });
 
       if (!res.ok) {
-        throw new Error("Profile not found");
+        console.warn("Profile not found for id:", id);
+        setUserId(null);
+        setCredits(null);
+        setCreatedAt(null);
+        return;
       }
 
       const data: Profile = await res.json();
@@ -45,32 +58,11 @@ export default function UserCenterPage() {
       setMessage(null);
     } catch (err) {
       console.error(err);
-      setMessage("Không tìm thấy tài khoản với ID này.");
-    } finally {
-      setLoading(false);
+      setMessage("Không tải được thông tin tài khoản. Hãy thử lại sau.");
     }
   }
 
-  // Khởi tạo từ localStorage (nếu có)
-  useEffect(() => {
-    const init = async () => {
-      try {
-        const stored = localStorage.getItem(LOCAL_KEY);
-        if (stored) {
-          await fetchProfile(stored);
-        } else {
-          setLoading(false);
-        }
-      } catch (err) {
-        console.error(err);
-        setLoading(false);
-      }
-    };
-
-    init();
-  }, []);
-
-  // Tạo tài khoản mới (gọi /auth/guest)
+  // Tạo tài khoản mới (guest)
   async function handleCreateNewAccount() {
     try {
       setBusy(true);
@@ -95,18 +87,17 @@ export default function UserCenterPage() {
       setMessage("Đã tạo tài khoản mới và đăng nhập thành công.");
     } catch (err) {
       console.error(err);
-      setMessage("Không tạo được tài khoản mới, thử lại sau nha.");
+      setMessage("Không tạo được tài khoản mới, hãy thử lại sau.");
     } finally {
       setBusy(false);
-      setLoading(false);
     }
   }
 
-  // Đăng nhập / đổi sang user_id khác
+  // Dùng user_id đã nhập
   async function handleUseExistingId() {
     const trimmed = inputId.trim();
     if (!trimmed) {
-      setMessage("Nhập user_id trước đã.");
+      setMessage("Hãy nhập user_id trước.");
       return;
     }
 
@@ -135,15 +126,19 @@ export default function UserCenterPage() {
       setMessage("Đã đăng nhập bằng User ID này.");
     } catch (err) {
       console.error(err);
-      setMessage("Có lỗi khi đăng nhập bằng User ID, thử lại sau nha.");
+      setMessage("Có lỗi khi đăng nhập bằng User ID, hãy thử lại sau.");
     } finally {
       setBusy(false);
-      setLoading(false);
     }
   }
 
+  // Xoá user_id khỏi trình duyệt
   function handleLogout() {
-    localStorage.removeItem(LOCAL_KEY);
+    try {
+      localStorage.removeItem(LOCAL_KEY);
+    } catch (err) {
+      console.error(err);
+    }
     setUserId(null);
     setCredits(null);
     setCreatedAt(null);
@@ -152,171 +147,82 @@ export default function UserCenterPage() {
   }
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        background:
-          "linear-gradient(135deg, rgba(37,99,235,0.15), rgba(236,72,153,0.15))",
-        padding: "16px",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "480px",
-          background: "white",
-          borderRadius: "16px",
-          boxShadow: "0 12px 30px rgba(15,23,42,0.15)",
-          padding: "20px 18px",
-          boxSizing: "border-box",
-        }}
-      >
-        <h1
-          style={{
-            fontSize: "20px",
-            fontWeight: 700,
-            marginBottom: "4px",
-          }}
-        >
-          User Center
-        </h1>
-        <p
-          style={{
-            fontSize: "12px",
-            color: "#6b7280",
-            marginBottom: "16px",
-          }}
-        >
-          Quản lý <b>user_id</b> đang dùng cho FaceSwap AI. Có thể tạo tài
-          khoản mới hoặc đăng nhập bằng user_id khác.
-        </p>
+    <div className="min-h-screen w-full bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 flex items-center justify-center px-4 py-8">
+      <div className="w-full max-w-md rounded-3xl bg-white/95 text-slate-900 shadow-2xl border border-white/10 backdrop-blur-md px-5 py-6 sm:px-6 sm:py-7">
+        {/* Header */}
+        <div className="mb-4">
+          <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-sky-500 to-violet-500 bg-clip-text text-transparent">
+            User Center
+          </h1>
+          <p className="mt-1 text-xs sm:text-sm text-slate-500 leading-snug">
+            Quản lý <span className="font-semibold">user_id</span> đang dùng cho
+            FaceSwap AI. Bạn có thể tạo tài khoản mới hoặc đăng nhập bằng
+            user_id khác.
+          </p>
+        </div>
 
         {/* Thông tin tài khoản hiện tại */}
-        <div
-          style={{
-            borderRadius: "10px",
-            background: "#f9fafb",
-            padding: "10px 12px",
-            marginBottom: "14px",
-            fontSize: "12px",
-          }}
-        >
-          <div style={{ marginBottom: "4px" }}>
-            <span style={{ fontWeight: 600 }}>User hiện tại:</span>{" "}
-            <span style={{ wordBreak: "break-all" }}>
+        <div className="mb-4 rounded-2xl bg-slate-50 border border-slate-100 px-4 py-3 text-xs sm:text-sm">
+          <div className="mb-1">
+            <span className="font-semibold">User hiện tại:</span>{" "}
+            <span className="break-all">
               {userId ?? "(chưa đăng nhập)"}
             </span>
           </div>
-          <div>
-            <span style={{ fontWeight: 600 }}>Credits:</span>{" "}
-            {loading ? "Đang tải..." : credits ?? 0}
+          <div className="mb-1">
+            <span className="font-semibold">Credits:</span>{" "}
+            {credits ?? 0}
           </div>
           {createdAt && (
-            <div style={{ marginTop: "2px", color: "#9ca3af" }}>
+            <div className="text-[11px] sm:text-xs text-slate-400">
               Tạo lúc: {new Date(createdAt).toLocaleString()}
             </div>
           )}
         </div>
 
-        {/* Ô nhập user id để đăng nhập / đổi account */}
-        <label
-          style={{
-            fontSize: "12px",
-            fontWeight: 600,
-            display: "block",
-            marginBottom: "4px",
-          }}
-        >
-          Đăng nhập bằng user_id có sẵn
-        </label>
-        <input
-          value={inputId}
-          onChange={(e) => setInputId(e.target.value)}
-          placeholder="Dán user_id vào đây"
-          style={{
-            width: "100%",
-            borderRadius: "8px",
-            border: "1px solid #e5e7eb",
-            padding: "8px 10px",
-            fontSize: "12px",
-            marginBottom: "8px",
-            boxSizing: "border-box",
-          }}
-        />
+        {/* Nhập user_id có sẵn */}
+        <div className="mb-3">
+          <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">
+            Đăng nhập bằng user_id có sẵn
+          </label>
+          <input
+            value={inputId}
+            onChange={(e) => setInputId(e.target.value)}
+            placeholder="Dán user_id vào đây"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs sm:text-sm text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400 transition"
+          />
+        </div>
 
+        {/* Nút dùng user_id */}
         <button
           onClick={handleUseExistingId}
           disabled={busy}
-          style={{
-            width: "100%",
-            padding: "8px 10px",
-            borderRadius: "8px",
-            border: "none",
-            backgroundColor: "#4f46e5",
-            color: "white",
-            fontSize: "13px",
-            fontWeight: 600,
-            cursor: "pointer",
-            marginBottom: "10px",
-            opacity: busy ? 0.7 : 1,
-          }}
+          className="w-full mb-2 rounded-xl bg-violet-600 hover:bg-violet-700 active:bg-violet-800 text-white text-xs sm:text-sm font-semibold py-2.5 shadow-md shadow-violet-500/30 disabled:opacity-60 disabled:cursor-not-allowed transition"
         >
-          Dùng user_id này
+          Login user_id
         </button>
 
+        {/* Nút tạo tài khoản mới */}
         <button
           onClick={handleCreateNewAccount}
           disabled={busy}
-          style={{
-            width: "100%",
-            padding: "8px 10px",
-            borderRadius: "8px",
-            border: "none",
-            backgroundColor: "#10b981",
-            color: "white",
-            fontSize: "13px",
-            fontWeight: 600,
-            cursor: "pointer",
-            marginBottom: "8px",
-            opacity: busy ? 0.7 : 1,
-          }}
+          className="w-full mb-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white text-xs sm:text-sm font-semibold py-2.5 shadow-md shadow-emerald-500/30 disabled:opacity-60 disabled:cursor-not-allowed transition"
         >
           Tạo tài khoản mới
         </button>
 
+        {/* Nút xoá user_id */}
         <button
           onClick={handleLogout}
           disabled={busy}
-          style={{
-            width: "100%",
-            padding: "6px 10px",
-            borderRadius: "8px",
-            border: "1px solid #e5e7eb",
-            backgroundColor: "white",
-            color: "#6b7280",
-            fontSize: "12px",
-            cursor: "pointer",
-            marginBottom: "8px",
-            opacity: busy ? 0.7 : 1,
-          }}
+          className="w-full mb-1 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-[11px] sm:text-xs text-slate-600 font-medium py-2 disabled:opacity-60 disabled:cursor-not-allowed transition"
         >
           Xoá user_id khỏi trình duyệt
         </button>
 
+        {/* Message */}
         {message && (
-          <div
-            style={{
-              marginTop: "6px",
-              fontSize: "12px",
-              color: "#374151",
-              background: "#fef9c3",
-              borderRadius: "8px",
-              padding: "6px 8px",
-            }}
-          >
+          <div className="mt-2 rounded-xl bg-yellow-50 border border-yellow-100 px-3 py-2 text-[11px] sm:text-xs text-slate-700">
             {message}
           </div>
         )}
