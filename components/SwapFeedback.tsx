@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { forwardRef, useImperativeHandle, useState } from "react";
 
-export default function SwapFeedback({ onSubmit }) {
+// ⭐ BỌC THÊM forwardRef (KHÔNG ĐỤNG CODE CŨ)
+const SwapFeedback = forwardRef(function SwapFeedback({ onSubmit }, ref) {
+
+  // ⭐ GIỮ NGUYÊN CODE GỐC CỦA BÉ
   const [show, setShow] = useState(false);
 
   const open = () => setShow(true);
@@ -11,6 +14,11 @@ export default function SwapFeedback({ onSubmit }) {
     setShow(false);
     onSubmit(stars);
   };
+
+  // ⭐ THÊM useImperativeHandle — KHÔNG ĐỔI NỘI DUNG CŨ
+  useImperativeHandle(ref, () => ({
+    open,
+  }));
 
   return (
     <>
@@ -35,4 +43,6 @@ export default function SwapFeedback({ onSubmit }) {
       )}
     </>
   );
-}
+});
+
+export default SwapFeedback;

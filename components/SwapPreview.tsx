@@ -1,7 +1,11 @@
 "use client";
-import { useState } from "react";
 
-export default function SwapPreview({ source, target }) {
+import { forwardRef, useImperativeHandle, useState } from "react";
+
+// ⭐ BỌC THÊM forwardRef (KHÔNG ĐỤNG CODE CŨ)
+const SwapPreview = forwardRef(function SwapPreview({ source, target }, ref) {
+
+  // ⭐ GIỮ NGUYÊN CODE GỐC CỦA BÉ
   const [show, setShow] = useState(false);
 
   // Gọi khi bé bấm nút Swap
@@ -13,6 +17,11 @@ export default function SwapPreview({ source, target }) {
       cb(); // tiếp tục thực hiện swap thật sự
     }, 900); // hiệu ứng 0.9s
   };
+
+  // ⭐ THÊM useImperativeHandle — KHÔNG ĐỤNG CODE CŨ
+  useImperativeHandle(ref, () => ({
+    startPreview,
+  }));
 
   return (
     <>
@@ -36,4 +45,6 @@ export default function SwapPreview({ source, target }) {
       )}
     </>
   );
-}
+});
+
+export default SwapPreview;
