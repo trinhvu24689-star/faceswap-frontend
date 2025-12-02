@@ -17,7 +17,7 @@ const SwapFeedback = forwardRef<any, SwapFeedbackProps>(function SwapFeedback(
 
   const open = () => setShow(true);
 
-  const send = (stars) => {
+  const send = (stars: number) => {
     setShow(false);
     onSubmit(stars);
   };
