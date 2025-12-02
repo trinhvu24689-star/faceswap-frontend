@@ -17,7 +17,7 @@ const SwapPreview = forwardRef<any, SwapPreviewProps>(function SwapPreview(
   const [show, setShow] = useState(false);
 
   // Gọi khi bé bấm nút Swap
-  const startPreview = (cb) => {
+  const startPreview = (cb: () => void) => {
     setShow(true);
 
     setTimeout(() => {
