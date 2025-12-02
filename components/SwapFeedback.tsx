@@ -2,10 +2,17 @@
 
 import { forwardRef, useImperativeHandle, useState } from "react";
 
-// ⭐ BỌC THÊM forwardRef (KHÔNG ĐỤNG CODE CŨ)
-const SwapFeedback = forwardRef(function SwapFeedback({ onSubmit }, ref) {
+// ⭐ THÊM TYPE — KHÔNG ĐỤNG CODE CŨ
+type SwapFeedbackProps = {
+  onSubmit: (stars: number) => void;
+};
 
-  // ⭐ GIỮ NGUYÊN CODE GỐC CỦA BÉ
+// ⭐ BỌC forwardRef + THÊM TYPE (KHÔNG ĐỔI CODE CŨ)
+const SwapFeedback = forwardRef<any, SwapFeedbackProps>(function SwapFeedback(
+  { onSubmit },
+  ref
+) {
+  // ⭐ GIỮ NGUYÊN CODE BÉ
   const [show, setShow] = useState(false);
 
   const open = () => setShow(true);
@@ -15,7 +22,7 @@ const SwapFeedback = forwardRef(function SwapFeedback({ onSubmit }, ref) {
     onSubmit(stars);
   };
 
-  // ⭐ THÊM useImperativeHandle — KHÔNG ĐỔI NỘI DUNG CŨ
+  // ⭐ THÊM useImperativeHandle — KHÔNG ĐỔI CODE CŨ
   useImperativeHandle(ref, () => ({
     open,
   }));
@@ -37,7 +44,9 @@ const SwapFeedback = forwardRef(function SwapFeedback({ onSubmit }, ref) {
               <button onClick={() => send(1)}>⭐</button>
             </div>
 
-            <p className="text-white/70 text-sm">Cảm ơn bạn đã đánh giá,chúng tôi sẽ cải thiện tốt hơn 💗</p>
+            <p className="text-white/70 text-sm">
+              Cảm ơn bạn đã đánh giá,chúng tôi sẽ cải thiện tốt hơn 💗
+            </p>
           </div>
         </div>
       )}
