@@ -23,30 +23,29 @@ export default function UserCenterPage() {
   const [inputId, setInputId] = useState("");
   const [message, setMessage] = useState<string | null>(null);
 
-  // Khởi tạo: nếu có faceswap_user_id thì load profile
+  // --------- AUTO LOAD UID (FIX LỖI 1) ----------
   useEffect(() => {
     try {
       const stored = localStorage.getItem(LOCAL_KEY);
       if (!stored) return;
-      fetchProfile(stored);
+
+      // Không xoá UID nếu lỗi — giữ để user còn copy
+      fetchProfile(stored, false);
     } catch (err) {
-      console.error("Init user center error:", err);
+      console.error("Init error:", err);
     }
   }, []);
 
-  async function fetchProfile(id: string) {
+  async function fetchProfile(id: string, showMessage = true) {
     try {
       const res = await fetch(`${API_URL}/profile`, {
-        headers: {
-          "x-user-id": id,
-        },
+        headers: { "x-user-id": id },
       });
 
       if (!res.ok) {
-        console.warn("Profile not found for id:", id);
-        setUserId(null);
-        setCredits(null);
-        setCreatedAt(null);
+        if (showMessage) {
+          setMessage("User ID không tồn tại trên server.");
+        }
         return;
       }
 
@@ -58,11 +57,11 @@ export default function UserCenterPage() {
       setMessage(null);
     } catch (err) {
       console.error(err);
-      setMessage("Không tải được thông tin tài khoản. Hãy thử lại sau.");
+      if (showMessage)
+        setMessage("Không tải được tài khoản. Kiểm tra kết nối mạng.");
     }
   }
 
-  // Tạo tài khoản mới (guest)
   async function handleCreateNewAccount() {
     try {
       setBusy(true);
@@ -72,73 +71,55 @@ export default function UserCenterPage() {
         method: "POST",
       });
 
-      if (!res.ok) {
-        throw new Error("Failed to create guest user");
-      }
+      if (!res.ok) throw new Error("fail");
 
-      const data = (await res.json()) as { user_id: string; credits: number };
+      const data = await res.json();
 
       localStorage.setItem(LOCAL_KEY, data.user_id);
       setUserId(data.user_id);
       setCredits(data.credits);
-      setCreatedAt(null);
       setInputId(data.user_id);
-
-      setMessage("Đã tạo tài khoản mới và đăng nhập thành công.");
-    } catch (err) {
-      console.error(err);
-      setMessage("Không tạo được tài khoản mới, hãy thử lại sau.");
+      setMessage("Tạo tài khoản mới thành công.");
+    } catch {
+      setMessage("Không tạo được tài khoản mới.");
     } finally {
       setBusy(false);
     }
   }
 
-  // Dùng user_id đã nhập
   async function handleUseExistingId() {
-    const trimmed = inputId.trim();
-    if (!trimmed) {
-      setMessage("Hãy nhập user_id trước.");
+    const id = inputId.trim();
+    if (!id) {
+      setMessage("Hãy nhập user_id.");
       return;
     }
 
     try {
       setBusy(true);
-      setMessage(null);
 
       const res = await fetch(`${API_URL}/profile`, {
-        headers: {
-          "x-user-id": trimmed,
-        },
+        headers: { "x-user-id": id },
       });
 
       if (!res.ok) {
-        setMessage("User ID này không tồn tại trong hệ thống.");
+        setMessage("User ID không tồn tại.");
         return;
       }
 
-      const data: Profile = await res.json();
+      const data = await res.json();
 
-      localStorage.setItem(LOCAL_KEY, data.user_id);
+      localStorage.setItem(LOCAL_KEY, id);
       setUserId(data.user_id);
       setCredits(data.credits);
       setCreatedAt(data.created_at ?? null);
-
-      setMessage("Đã đăng nhập bằng User ID này.");
-    } catch (err) {
-      console.error(err);
-      setMessage("Có lỗi khi đăng nhập bằng User ID, hãy thử lại sau.");
+      setMessage("Đăng nhập thành công.");
     } finally {
       setBusy(false);
     }
   }
 
-  // Xoá user_id khỏi trình duyệt
   function handleLogout() {
-    try {
-      localStorage.removeItem(LOCAL_KEY);
-    } catch (err) {
-      console.error(err);
-    }
+    localStorage.removeItem(LOCAL_KEY);
     setUserId(null);
     setCredits(null);
     setCreatedAt(null);
@@ -147,82 +128,71 @@ export default function UserCenterPage() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 flex items-center justify-center px-4 py-8">
-      <div className="w-full max-w-md rounded-3xl bg-white/95 text-slate-900 shadow-2xl border border-white/10 backdrop-blur-md px-5 py-6 sm:px-6 sm:py-7">
-        {/* Header */}
-        <div className="mb-4">
-          <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-sky-500 to-violet-500 bg-clip-text text-transparent">
-            User Center
-          </h1>
-          <p className="mt-1 text-xs sm:text-sm text-slate-500 leading-snug">
-            Quản lý <span className="font-semibold">user_id</span> đang dùng cho
-            FaceSwap AI. Bạn có thể tạo tài khoản mới hoặc đăng nhập bằng
-            user_id khác.
-          </p>
-        </div>
+    <div className="min-h-screen w-full bg-gradient-to-br from-slate-900 to-black flex items-center justify-center px-4 py-10">
+      <div className="w-full max-w-md rounded-3xl bg-white/95 shadow-2xl border border-white/20 backdrop-blur px-6 py-7">
 
-        {/* Thông tin tài khoản hiện tại */}
-        <div className="mb-4 rounded-2xl bg-slate-50 border border-slate-100 px-4 py-3 text-xs sm:text-sm">
-          <div className="mb-1">
-            <span className="font-semibold">User hiện tại:</span>{" "}
-            <span className="break-all">
-              {userId ?? "(chưa đăng nhập)"}
-            </span>
-          </div>
-          <div className="mb-1">
-            <span className="font-semibold">Credits:</span>{" "}
-            {credits ?? 0}
-          </div>
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-sky-400 to-violet-500 bg-clip-text text-transparent">
+          User Center
+        </h1>
+        <p className="text-xs text-slate-500 mt-1">
+          Quản lý user_id và trạng thái tài khoản.
+        </p>
+
+        {/* CURRENT USER BOX */}
+        <div className="mt-4 p-4 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm">
+          <p className="text-sm">
+            <span className="font-semibold">User ID:</span>{" "}
+            <span className="break-all">{userId ?? "(chưa đăng nhập)"}</span>
+          </p>
+          <p className="text-sm mt-1">
+            <span className="font-semibold">Credits:</span> {credits ?? 0}
+          </p>
           {createdAt && (
-            <div className="text-[11px] sm:text-xs text-slate-400">
+            <p className="text-xs text-slate-400 mt-1">
               Tạo lúc: {new Date(createdAt).toLocaleString()}
-            </div>
+            </p>
           )}
         </div>
 
-        {/* Nhập user_id có sẵn */}
-        <div className="mb-3">
-          <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">
-            Đăng nhập bằng user_id có sẵn
-          </label>
-          <input
-            value={inputId}
-            onChange={(e) => setInputId(e.target.value)}
-            placeholder="Dán user_id vào đây"
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs sm:text-sm text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400 transition"
-          />
-        </div>
+        {/* INPUT UID */}
+        <label className="block mt-5 text-sm font-semibold text-slate-700">
+          Đăng nhập bằng user_id
+        </label>
+        <input
+          value={inputId}
+          onChange={(e) => setInputId(e.target.value)}
+          placeholder="Dán user_id tại đây"
+          className="w-full mt-1 rounded-xl border border-slate-300 py-2 px-3 text-sm focus:ring-2 focus:ring-violet-400 outline-none"
+        />
 
-        {/* Nút dùng user_id */}
         <button
           onClick={handleUseExistingId}
           disabled={busy}
-          className="w-full mb-2 rounded-xl bg-violet-600 hover:bg-violet-700 active:bg-violet-800 text-white text-xs sm:text-sm font-semibold py-2.5 shadow-md shadow-violet-500/30 disabled:opacity-60 disabled:cursor-not-allowed transition"
+          className="w-full mt-3 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold shadow-md disabled:opacity-60"
         >
-          Login user_id
+          Dùng user_id này
         </button>
 
-        {/* Nút tạo tài khoản mới */}
+        {/* CREATE NEW */}
         <button
           onClick={handleCreateNewAccount}
           disabled={busy}
-          className="w-full mb-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white text-xs sm:text-sm font-semibold py-2.5 shadow-md shadow-emerald-500/30 disabled:opacity-60 disabled:cursor-not-allowed transition"
+          className="w-full mt-2 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold shadow-md disabled:opacity-60"
         >
           Tạo tài khoản mới
         </button>
 
-        {/* Nút xoá user_id */}
+        {/* LOGOUT */}
         <button
           onClick={handleLogout}
           disabled={busy}
-          className="w-full mb-1 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-[11px] sm:text-xs text-slate-600 font-medium py-2 disabled:opacity-60 disabled:cursor-not-allowed transition"
+          className="w-full mt-2 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-600 text-xs font-medium disabled:opacity-60"
         >
-          Xoá user_id khỏi trình duyệt
+          Xoá user_id khỏi hệ thống
         </button>
 
-        {/* Message */}
         {message && (
-          <div className="mt-2 rounded-xl bg-yellow-50 border border-yellow-100 px-3 py-2 text-[11px] sm:text-xs text-slate-700">
+          <div className="mt-3 p-3 rounded-xl bg-yellow-50 border border-yellow-200 text-xs text-slate-700">
             {message}
           </div>
         )}

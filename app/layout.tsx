@@ -5,6 +5,18 @@ import "./globals.css";
 // ⭐ THÊM MENU
 import HamburgerMenu from "@/components/HamburgerMenu";
 
+// ⭐ CHÈN THÊM SERVER WAKE (KHÔNG ĐỤNG CODE CŨ)
+import ServerWake from "@/components/ServerWake";
+
+// ⭐ CHÈN THÊM PAGE TRANSITION (KHÔNG ĐỤNG CODE CŨ)
+import PageTransition from "@/components/PageTransition";
+
+// ⭐ CHÈN THÊM SERVER STATUS FOOTER (KHÔNG ĐỤNG CODE CŨ)
+import ServerStatus from "@/components/ServerStatus";
+
+// ⭐ CHÈN THÊM AIBUBBLE
+import AIBubble from "@/components/AIBubble";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -30,6 +42,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+
+        {/* ⭐ CHÈN THÊM: AUTO SERVER WAKE */}
+        <ServerWake />
+
+        {/* ⭐ CHÈN THÊM: PAGE TRANSITION */}
+        <PageTransition />
+
         {/* ⭐ HEADER CỐ ĐỊNH CHO MENU */}
         <header className="w-full flex justify-end p-4 fixed top-0 right-0 z-50">
           <HamburgerMenu />
@@ -39,6 +58,13 @@ export default function RootLayout({
         <div className="pt-14">
           {children}
         </div>
+
+        {/* ⭐ CHÈN THÊM: AIBUBBLE (THEO YÊU CẦU CỦA BÉ) */}
+        <AIBubble />
+
+        {/* ⭐ CHÈN THÊM: FOOTER STATUS */}
+        <ServerStatus />
+
       </body>
     </html>
   );
