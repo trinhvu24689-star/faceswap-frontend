@@ -2,10 +2,18 @@
 
 import { forwardRef, useImperativeHandle, useState } from "react";
 
-// ⭐ BỌC THÊM forwardRef (KHÔNG ĐỤNG CODE CŨ)
-const SwapPreview = forwardRef(function SwapPreview({ source, target }, ref) {
+// ⭐ THÊM TYPE — KHÔNG ĐỤNG CODE CŨ
+type SwapPreviewProps = {
+  source: any;
+  target: any;
+};
 
-  // ⭐ GIỮ NGUYÊN CODE GỐC CỦA BÉ
+// ⭐ BỌC forwardRef + THÊM TYPE (KHÔNG ĐỔI CODE CŨ)
+const SwapPreview = forwardRef<any, SwapPreviewProps>(function SwapPreview(
+  { source, target },
+  ref
+) {
+  // ⭐ GIỮ NGUYÊN CODE BÉ
   const [show, setShow] = useState(false);
 
   // Gọi khi bé bấm nút Swap
@@ -18,7 +26,7 @@ const SwapPreview = forwardRef(function SwapPreview({ source, target }, ref) {
     }, 900); // hiệu ứng 0.9s
   };
 
-  // ⭐ THÊM useImperativeHandle — KHÔNG ĐỤNG CODE CŨ
+  // ⭐ THÊM useImperativeHandle (KHÔNG ĐỔI CODE CŨ)
   useImperativeHandle(ref, () => ({
     startPreview,
   }));
