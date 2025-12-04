@@ -142,7 +142,7 @@ export default function Home() {
         </header>
 
         {/* PREVIEW ẢNH MẪU */}
-        <SwapPreview />
+        <SwapPreview source={sourceFile} target={targetFile} />
 
         {/* NÚT VIDEO */}
         <div className="mt-3 flex rounded-2xl overflow-hidden border border-[#2a2a2a] bg-[#181818] text-[12px] font-medium">
