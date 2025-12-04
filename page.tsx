@@ -1,9 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import HamburgerMenu from "@/components/HamburgerMenu";
-
-const API_URL = "https://faceswap-backend-clean.fly.dev";
 
 // ====== CREDIT PACKS (CHỈ HIỂN THỊ) ======
 const CREDIT_PACKS = [
@@ -22,114 +20,18 @@ const CREDIT_PACKS = [
   { id: "pack_10000", label: "Gói 10.000❄️", credits: 10000, price: "5.000.000đ" },
 ];
 
-export default function Home() {
+
+export default function SwapPage() {
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [targetFile, setTargetFile] = useState<File | null>(null);
-  const [resultImg, setResultImg] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const [userId, setUserId] = useState<string | null>(null);
-  const [credits, setCredits] = useState<number>(0);
-  const [loadingCredits, setLoadingCredits] = useState(true);
-
-  useEffect(() => {
-    const init = async () => {
-      let uid = localStorage.getItem("faceswap_user_id");
-
-      try {
-        if (!uid) {
-          uid = `guest-${Date.now()}`;
-          localStorage.setItem("faceswap_user_id", uid);
-        }
-
-        const res = await fetch(`${API_URL}/credits?user_id=${uid}`);
-        if (res.ok) {
-          const data = await res.json().catch(() => null);
-          if (typeof data?.credits === "number") {
-            setCredits(data.credits);
-          }
-        }
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setUserId(uid);
-        setLoadingCredits(false);
-      }
-    };
-
-    init();
-  }, []);
-
-  const handleSwap = async () => {
-    if (!sourceFile || !targetFile) {
-      setError("Select Full 2 Picturer 😘");
-      return;
-    }
-
-    if (!userId) {
-      setError("Không xác định được tài khoản, tải lại trang thử nhé 💦");
-      return;
-    }
-
-    try {
-      setLoading(true);
-      setError(null);
-      setResultImg(null);
-
-      const formData = new FormData();
-      formData.append("source_image", sourceFile);
-      formData.append("target_image", targetFile);
-      formData.append("user_id", userId);
-
-      const res = await fetch(`${API_URL}/faceswap`, {
-        method: "POST",
-        body: formData,
-      });
-
-      let data: any = null;
-      try {
-        data = await res.json();
-      } catch {
-        throw new Error("Lỗi server");
-      }
-
-      if (!res.ok) {
-        throw new Error(data?.detail || "Lỗi server");
-      }
-
-      if (typeof data?.credits_left === "number") {
-        setCredits(data.credits_left);
-      }
-
-      if (!data?.result_url) {
-        throw new Error("Lỗi server");
-      }
-
-      const imgRes = await fetch(`${API_URL}${data.result_url}`);
-      if (!imgRes.ok) throw new Error("Lỗi server");
-
-      const blob = await imgRes.blob();
-      const url = URL.createObjectURL(blob);
-
-      setResultImg((old) => {
-        if (old) URL.revokeObjectURL(old);
-        return url;
-      });
-    } catch (e: any) {
-      setError(e?.message || "Có lỗi gì đó rồi :<");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
-    <div className="relative flex justify-center bg-[#111] min-h-screen">
-      <div className="fixed inset-0 -z-10 bg-gradient-to-b from-black via-[#121212] to-[#050505]" />
+    <div className="relative flex justify-center bg-[#0b0b0b] min-h-screen text-white">
+      <div className="fixed inset-0 -z-10 bg-gradient-to-b from-black via-[#0f0f0f] to-black" />
 
-      <main className="w-full max-w-[420px] px-3 py-4 text-white">
+      <main className="w-full max-w-[430px] px-3 py-4">
         {/* HEADER */}
-        <header className="rounded-2xl bg-[#111111] border border-[#2b2b2b] px-3 py-2 flex items-center justify-between">
+        <header className="rounded-2xl bg-[#111] border border-[#2b2b2b] px-3 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-xl bg-lime-400 flex items-center justify-center text-black font-bold text-xs">
               🐦‍🔥
@@ -141,102 +43,130 @@ export default function Home() {
               </span>
             </div>
           </div>
-
-          <div className="flex items-center gap-2 text-[11px]">
-            <div className="flex items-center gap-1 bg-[#222] px-2 py-1 rounded-full">
-              <span className="text-yellow-300">❄️</span>
-              <span>{loadingCredits ? "..." : credits}</span>
-            </div>
-            <HamburgerMenu />
-          </div>
+          <HamburgerMenu />
         </header>
 
         {/* TAB */}
-        <div className="mt-3 flex rounded-2xl overflow-hidden border border-[#2a2a2a] bg-[#181818] text-[12px] font-medium">
-          <button className="flex-1 py-2 text-center bg-lime-400 text-black">
+        <div className="mt-3 flex rounded-full overflow-hidden bg-[#1c1c1c] border border-[#2a2a2a] text-[13px]">
+          <div className="flex-1 py-2 text-center bg-lime-400 text-black rounded-full">
             Hoán đổi khuôn mặt ảnh
-          </button>
-          <button
-            disabled
-            className="flex-1 py-2 text-center bg-[#252525] text-slate-600 cursor-not-allowed"
-          >
-            Hoán đổi khuôn mặt video (Đang bảo trì)
-          </button>
-        </div>
-
-        {/* KHUNG DEMO */}
-        <div className="mt-4 rounded-3xl bg-[#181818] border border-[#2a2a2a] p-3">
-          <div className="aspect-video rounded-xl bg-black flex items-center justify-center text-slate-500 text-xs">
-            Demo kết quả
+          </div>
+          <div className="flex-1 py-2 text-center text-slate-400">
+            Hoán đổi khuôn mặt video
           </div>
         </div>
+
+{/* KHUNG PREVIEW CHUẨN THEO ẢNH */}
+<div className="mt-4 rounded-[28px] bg-[#0e0e0e] border border-[#2a2a2a] p-4 shadow-[inset_0_0_40px_rgba(0,0,0,0.85)]">
+  <div className="relative grid grid-cols-2 gap-4 rounded-[22px] bg-[#0b0b0b] p-4 border border-[#1f1f1f]">
+    
+    {/* ẢNH GỐC */}
+    <div className="h-[180px] rounded-[18px] bg-black flex items-center justify-center text-[#9ca3af] text-sm border border-[#1f1f1f]">
+      Ảnh gốc của bạn
+    </div>
+
+    {/* ẢNH MUỐN THAY */}
+    <div className="h-[180px] rounded-[18px] bg-black flex items-center justify-center text-[#9ca3af] text-sm border border-[#1f1f1f]">
+      Ảnh muốn thay mặt
+    </div>
+
+    {/* AVATAR TRÒN GIỮA */}
+<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none">
+
+  {/* Vòng tròn rỗng viền mỏng */}
+  <div className="w-[50px] h-[50px] rounded-full bg-transparent border border-lime-400 flex items-center justify-center text-lime-400 text-[11px] font-medium shadow-none">
+    ❄️
+  </div>
+
+  {/* Mũi tên như ảnh */}
+  <svg width="22" height="12" viewBox="0 0 26 14" className="mt-0.5">
+    <path d="M1 7H22M22 7L18 3M22 7L18 11" 
+      stroke="#A3FF00" 
+      strokeWidth="1.5" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+    />
+  </svg>
+
+</div>
 
         {/* STEP 1 */}
-        <div className="mt-4 text-sm">
-          <span className="text-lime-400 font-bold mr-2">1</span>
-          Tải lên hình ảnh gốc có khuôn mặt
+        <div className="mt-4">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="h-6 w-6 rounded-full bg-lime-400 text-black text-xs flex items-center justify-center font-bold">
+              1
+            </div>
+            <span className="font-semibold text-sm">
+              Tải lên hình ảnh gốc có khuôn mặt
+            </span>
+          </div>
+
+          <label className="block bg-lime-400 text-black font-semibold rounded-full py-2 text-center cursor-pointer">
+            Tải lên hình ảnh ↑
+            <input
+              type="file"
+              hidden
+              accept="image/*"
+              onChange={(e) => setSourceFile(e.target.files?.[0] || null)}
+            />
+          </label>
+          <div className="text-[11px] text-slate-400 mt-1">
+            PNG / JPG / JPEG / WEBP / GIF
+          </div>
         </div>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => setSourceFile(e.target.files?.[0] || null)}
-          className="mt-2 w-full rounded-xl bg-lime-400 text-black font-semibold py-2"
-        />
 
         {/* STEP 2 */}
-        <div className="mt-4 text-sm">
-          <span className="text-lime-400 font-bold mr-2">2</span>
-          Tải lên ảnh khuôn mặt
+        <div className="mt-4">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="h-6 w-6 rounded-full bg-lime-400 text-black text-xs flex items-center justify-center font-bold">
+              2
+            </div>
+            <span className="font-semibold text-sm">
+              Tải lên ảnh khuôn mặt
+            </span>
+          </div>
+
+          <label className="block bg-lime-400 text-black font-semibold rounded-full py-2 text-center cursor-pointer">
+            Tải lên hình ảnh ↑
+            <input
+              type="file"
+              hidden
+              accept="image/*"
+              onChange={(e) => setTargetFile(e.target.files?.[0] || null)}
+            />
+          </label>
+          <div className="text-[11px] text-slate-400 mt-1">
+            PNG / JPG / JPEG / WEBP
+          </div>
         </div>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => setTargetFile(e.target.files?.[0] || null)}
-          className="mt-2 w-full rounded-xl bg-lime-400 text-black font-semibold py-2"
-        />
 
         {/* STEP 3 */}
-        <div className="mt-4 text-sm">
-          <span className="text-lime-400 font-bold mr-2">3</span>
-          Bắt đầu hoán đổi khuôn mặt
-        </div>
-        <button
-          onClick={handleSwap}
-          disabled={loading}
-          className="mt-2 w-full rounded-xl bg-lime-400 text-black font-semibold py-2"
-        >
-          {loading ? "Đang hoán đổi..." : "Hoán đổi khuôn mặt"}
-        </button>
-
-        {error && (
-          <div className="mt-3 text-[12px] text-red-100 bg-red-500/40 rounded-xl px-3 py-2">
-            {error}
+        <div className="mt-4">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="h-6 w-6 rounded-full bg-lime-400 text-black text-xs flex items-center justify-center font-bold">
+              3
+            </div>
+            <span className="font-semibold text-sm">
+              Bắt đầu hoán đổi khuôn mặt
+            </span>
           </div>
-        )}
 
-        {resultImg && (
-          <section className="mt-4 rounded-3xl bg-[#181818] border px-3 py-3">
-            <img
-              src={resultImg}
-              alt="Kết quả hoán đổi"
-              className="w-full object-contain rounded-xl"
-            />
-            <a
-              href={resultImg}
-              download="faceswap_result.jpg"
-              className="mt-3 block text-center bg-lime-400 text-black py-2 rounded-xl font-semibold"
-            >
-              ⬇ Tải ảnh về máy
-            </a>
-          </section>
-        )}
+          <button className="w-full bg-lime-400 text-black font-bold py-3 rounded-full mt-1">
+            Hoán đổi khuôn mặt →
+          </button>
 
-        <footer className="mt-4 text-[10px] text-center text-slate-400">
+          <div className="text-[11px] text-slate-400 mt-1">
+            Hạn ngạch miễn phí hàng ngày còn lại: Hình ảnh: 10
+          </div>
+        </div>
+
+
+        {/* FOOTER */}
+        <footer className="mt-5 text-[10px] text-center text-slate-400">
           ZenitSwap © 2025  
           Zalo: 085.684.8557 / Email: huuxhoang@gmail.com
         </footer>
       </main>
     </div>
   );
-}
 }
