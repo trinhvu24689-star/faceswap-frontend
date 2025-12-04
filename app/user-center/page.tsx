@@ -45,7 +45,13 @@ export default function UserCenter() {
         const data = await res.json();
         setProfile(data);
         setVip(data?.vip || "FREE");
-        setAvatar(data?.avatar || `/avatars/random-${(Math.floor(Math.random() * 10) + 1)}.png`);
+
+        if (data?.avatar) {
+          setAvatar(data.avatar);
+        } else {
+          const rand = Math.floor(Math.random() * 10) + 1;
+          setAvatar(`/avatars/random-${rand}.png`);
+        }
       } catch {}
     };
 
@@ -64,8 +70,14 @@ export default function UserCenter() {
         body: JSON.stringify({ user_id: userId, email, password }),
       });
 
-      if (!res.ok) throw new Error("Register failed");
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data?.detail || "Register failed");
+      }
+
       setOtpSent(true);
+      alert("Đăng ký thành công, vui lòng xác thực OTP");
     } catch (e: any) {
       setError(e?.message || "Lỗi đăng ký");
     } finally {
@@ -85,11 +97,17 @@ export default function UserCenter() {
         body: JSON.stringify({ email, password }),
       });
 
-      if (!res.ok) throw new Error("Login failed");
-
       const data = await res.json();
-      localStorage.setItem("faceswap_user_id", data.user_id);
-      setUserId(data.user_id);
+
+      if (!res.ok) {
+        throw new Error(data?.detail || "Login failed");
+      }
+
+      const uid = data?.user_id || data?.id;
+      if (!uid) throw new Error("Không nhận được user_id");
+
+      localStorage.setItem("faceswap_user_id", uid);
+      setUserId(uid);
       location.reload();
     } catch (e: any) {
       setError(e?.message || "Lỗi đăng nhập");
@@ -125,7 +143,7 @@ export default function UserCenter() {
 
       if (!res.ok) throw new Error("OTP fail");
       alert("OTP xác thực thành công");
-    } catch (e: any) {
+    } catch {
       alert("OTP sai");
     } finally {
       setLoading(false);
