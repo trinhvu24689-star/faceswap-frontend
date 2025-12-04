@@ -2,18 +2,12 @@
 
 import { useState, useRef } from "react";
 
-// ★ IMPORT PREVIEW
-import SwapPreview from "@/components/SwapPreview";
-
 // ★ IMPORT FEEDBACK
 import SwapFeedback from "@/components/SwapFeedback";
 
 export default function SwapPage() {
   const [sourcePreview, setSourcePreview] = useState("");
   const [targetPreview, setTargetPreview] = useState("");
-
-  // ★ PREVIEW REF
-  const previewRef = useRef<any>(null);
 
   // ★ FEEDBACK REF
   const feedbackRef = useRef<any>(null);
@@ -31,7 +25,6 @@ export default function SwapPage() {
     setTargetPreview(URL.createObjectURL(file));
   };
 
-
   // =============== NHẤN NÚT SWAP ===============
   const thựcHiệnSwapThật = async () => {
     // 👉 BÉ GẮN LOGIC SWAP CŨ VÀO ĐÂY  
@@ -46,19 +39,14 @@ export default function SwapPage() {
     }, 1000);
   };
 
-
-  // ★ CHẠY PREVIEW → RỒI MỚI SWAP THẬT
   const handleSwap = () => {
     if (!sourcePreview || !targetPreview) {
       alert("Chọn đủ 2 ảnh đã user😭💗");
       return;
     }
 
-    previewRef.current.startPreview(() => {
-      thựcHiệnSwapThật();
-    });
+    thựcHiệnSwapThật();
   };
-
 
   return (
     <div className="p-4 pt-20 text-white">
@@ -81,13 +69,6 @@ export default function SwapPage() {
           Swap Now 💗
         </button>
       </div>
-
-      {/* ★ GẮN PREVIEW (Ở CUỐI CÙNG) */}
-      <SwapPreview
-        ref={previewRef}
-        source={sourcePreview}
-        target={targetPreview}
-      />
 
       {/* ★ GẮN FEEDBACK (Ở CUỐI CÙNG) */}
       <SwapFeedback
