@@ -80,6 +80,14 @@ export default function HamburgerMenu() {
               <span>Trung tâm tài khoản</span>
             </button>
 
+            {/* HỆ THỐNG ADMIN */}
+            <button
+              onClick={() => (window.location.href = "/admin/add-credits")}
+              className="w-full text-left px-3 py-2 hover:bg-white/10 rounded-lg"
+            >
+              ⚙️ Hệ Thống Admin
+            </button>
+
           </div>
         </div>
 
