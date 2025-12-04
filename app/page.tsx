@@ -32,7 +32,6 @@ export default function Home() {
   const [userId, setUserId] = useState<string | null>(null);
   const [credits, setCredits] = useState<number>(0);
   const [loadingCredits, setLoadingCredits] = useState(true);
-  const [showShop, setShowShop] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -113,7 +112,8 @@ export default function Home() {
     <div className="relative flex justify-center bg-[#111] min-h-screen">
       <div className="fixed inset-0 -z-10 bg-gradient-to-b from-black via-[#121212] to-[#050505]" />
 
-      <main className="w-full max-w-[480px] px-3 py-4 text-white">
+      <main className="w-full max-w-[420px] px-3 py-4 text-white">
+        {/* HEADER */}
         <header className="rounded-2xl bg-[#111111] border border-[#2b2b2b] px-3 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-xl bg-lime-400 flex items-center justify-center text-black font-bold text-xs">
@@ -128,18 +128,15 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-2 text-[11px]">
-            <button
-              className="flex items-center gap-1 bg-[#222] px-2 py-1 rounded-full"
-              onClick={() => setShowShop(true)}
-            >
+            <div className="flex items-center gap-1 bg-[#222] px-2 py-1 rounded-full">
               <span className="text-yellow-300">❄️</span>
               <span>{loadingCredits ? "..." : credits}</span>
-            </button>
-
+            </div>
             <HamburgerMenu />
           </div>
         </header>
 
+        {/* TAB */}
         <div className="mt-3 flex rounded-2xl overflow-hidden border border-[#2a2a2a] bg-[#181818] text-[12px] font-medium">
           <button className="flex-1 py-2 text-center bg-lime-400 text-black">
             Hoán đổi khuôn mặt ảnh
@@ -152,28 +149,49 @@ export default function Home() {
           </button>
         </div>
 
-        <section className="mt-4 rounded-3xl bg-[#181818] border border-[#2a2a2a] px-3 pt-3 pb-4">
-          <div className="grid grid-cols-2 gap-2 mb-3">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setSourceFile(e.target.files?.[0] || null)}
-            />
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setTargetFile(e.target.files?.[0] || null)}
-            />
+        {/* KHUNG DEMO */}
+        <div className="mt-4 rounded-3xl bg-[#181818] border border-[#2a2a2a] p-3">
+          <div className="aspect-video rounded-xl bg-black flex items-center justify-center text-slate-500 text-xs">
+            Demo kết quả
           </div>
+        </div>
 
-          <button
-            onClick={handleSwap}
-            disabled={loading}
-            className="w-full rounded-xl bg-lime-400 text-black font-semibold py-2"
-          >
-            {loading ? "Đang hoán đổi..." : "Hoán đổi khuôn mặt"}
-          </button>
-        </section>
+        {/* STEP 1 */}
+        <div className="mt-4 text-sm">
+          <span className="text-lime-400 font-bold mr-2">1</span>
+          Tải lên hình ảnh gốc có khuôn mặt
+        </div>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setSourceFile(e.target.files?.[0] || null)}
+          className="mt-2 w-full rounded-xl bg-lime-400 text-black font-semibold py-2"
+        />
+
+        {/* STEP 2 */}
+        <div className="mt-4 text-sm">
+          <span className="text-lime-400 font-bold mr-2">2</span>
+          Tải lên ảnh khuôn mặt
+        </div>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setTargetFile(e.target.files?.[0] || null)}
+          className="mt-2 w-full rounded-xl bg-lime-400 text-black font-semibold py-2"
+        />
+
+        {/* STEP 3 */}
+        <div className="mt-4 text-sm">
+          <span className="text-lime-400 font-bold mr-2">3</span>
+          Bắt đầu hoán đổi khuôn mặt
+        </div>
+        <button
+          onClick={handleSwap}
+          disabled={loading}
+          className="mt-2 w-full rounded-xl bg-lime-400 text-black font-semibold py-2"
+        >
+          {loading ? "Đang hoán đổi..." : "Hoán đổi khuôn mặt"}
+        </button>
 
         {error && (
           <div className="mt-3 text-[12px] text-red-100 bg-red-500/40 rounded-xl px-3 py-2">
@@ -188,7 +206,6 @@ export default function Home() {
               alt="Kết quả hoán đổi"
               className="w-full object-contain rounded-xl"
             />
-
             <a
               href={resultImg}
               download="faceswap_result.jpg"
@@ -200,7 +217,7 @@ export default function Home() {
         )}
 
         <footer className="mt-4 text-[10px] text-center text-slate-400">
-          ZenitSwap © 2025 
+          ZenitSwap © 2025  
           Zalo: 085.684.8557 / Email: huuxhoang@gmail.com
         </footer>
       </main>
