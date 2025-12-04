@@ -45,7 +45,7 @@ export default function Home() {
 
         const res = await fetch(`${API_URL}/credits?user_id=${uid}`);
         if (res.ok) {
-          const data = await res.json();
+          const data = await res.json().catch(() => null);
           if (typeof data?.credits === "number") {
             setCredits(data.credits);
           }
@@ -87,20 +87,35 @@ export default function Home() {
         body: formData,
       });
 
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error("Lỗi server");
+      }
+
       if (!res.ok) {
-        const data = await res.json();
         throw new Error(data?.detail || "Lỗi server");
       }
 
-      const data = await res.json();
       if (typeof data?.credits_left === "number") {
         setCredits(data.credits_left);
       }
 
+      if (!data?.result_url) {
+        throw new Error("Lỗi server");
+      }
+
       const imgRes = await fetch(`${API_URL}${data.result_url}`);
+      if (!imgRes.ok) throw new Error("Lỗi server");
+
       const blob = await imgRes.blob();
       const url = URL.createObjectURL(blob);
-      setResultImg(url);
+
+      setResultImg((old) => {
+        if (old) URL.revokeObjectURL(old);
+        return url;
+      });
     } catch (e: any) {
       setError(e?.message || "Có lỗi gì đó rồi :<");
     } finally {
