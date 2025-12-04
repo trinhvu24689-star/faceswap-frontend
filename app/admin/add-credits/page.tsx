@@ -3,11 +3,11 @@
 import { useState } from "react";
 
 const API_URL = "https://faceswap-backend-clean.fly.dev";
+const ADMIN_KEY = "ZENITHADMIN"; // ✅ KEY CỐ ĐỊNH CHO VK
 
 export default function AdminAddCredits() {
   const [userId, setUserId] = useState("");
   const [amount, setAmount] = useState("");
-  const [adminKey, setAdminKey] = useState("");
   const [result, setResult] = useState("");
 
   const handleSubmit = async () => {
@@ -21,7 +21,7 @@ export default function AdminAddCredits() {
       const res = await fetch(`${API_URL}/admin/credits/add`, {
         method: "POST",
         headers: {
-          "x-admin-key": adminKey,
+          "x-admin-key": ADMIN_KEY, // ✅ TỰ GỬI KEY
         },
         body: formData,
       });
@@ -58,14 +58,6 @@ export default function AdminAddCredits() {
           type="number"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
-        />
-
-        <input
-          className="w-full p-2 rounded bg-gray-800"
-          placeholder="Admin Key"
-          type="password"
-          value={adminKey}
-          onChange={(e) => setAdminKey(e.target.value)}
         />
 
         <button
