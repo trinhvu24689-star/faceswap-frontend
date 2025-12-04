@@ -73,20 +73,33 @@ export default function SwapPage() {
     {/* AVATAR TRÒN GIỮA */}
 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none">
 
-  {/* Vòng tròn rỗng viền mỏng */}
-  <div className="w-[58px] h-[58px] rounded-full bg-transparent border border-lime-400 flex items-center justify-center text-lime-400 text-[11px] font-medium shadow-none">
+  {/* Vòng tròn rỗng viền */}
+  <div className="w-[55px] h-[55px] rounded-full bg-transparent border border-lime-400 flex items-center justify-center text-lime-400 text-[14px] font-medium shadow-none">
     ❄️
   </div>
 
-  {/* Mũi tên như ảnh */}
-  <svg width="28" height="16" viewBox="0 0 26 14" className="mt-1">
-    <path d="M1 7H22M22 7L18 3M22 7L18 11" 
-      stroke="#A3FF00" 
-      strokeWidth="2.6" 
-      strokeLinecap="round" 
-      strokeLinejoin="round"
-    />
-  </svg>
+ {/* Mũi tên cong như ảnh */}
+<svg width="28" height="18" viewBox="0 0 28 18" className="mt-1">
+  <path
+    d="M2 9 C8 2, 20 2, 26 9"
+    fill="none"
+    stroke="#A3FF00"
+    strokeWidth="2.6"
+    strokeLinecap="round"
+  />
+  <path
+    d="M26 9 L22 5"
+    stroke="#A3FF00"
+    strokeWidth="2.6"
+    strokeLinecap="round"
+  />
+  <path
+    d="M26 9 L22 13"
+    stroke="#A3FF00"
+    strokeWidth="2.6"
+    strokeLinecap="round"
+  />
+</svg>
 
 </div>
 </div>
