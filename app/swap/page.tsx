@@ -56,31 +56,31 @@ export default function SwapPage() {
           </div>
         </div>
 
-        {/* PREVIEW KHUNG */}
-        <div className="mt-4 p-3 rounded-[28px] bg-[#111] border border-[#2a2a2a] shadow-[inset_0_0_40px_rgba(0,0,0,0.8)]">
-          <div className="relative grid grid-cols-2 gap-3 bg-[#0b0b0b] rounded-2xl p-3">
+{/* KHUNG PREVIEW CHUẨN THEO ẢNH */}
+<div className="mt-4 rounded-[28px] bg-[#0e0e0e] border border-[#2a2a2a] p-4 shadow-[inset_0_0_40px_rgba(0,0,0,0.85)]">
+  <div className="relative grid grid-cols-2 gap-4 rounded-[22px] bg-[#0b0b0b] p-4 border border-[#1f1f1f]">
+    
+    {/* ẢNH GỐC */}
+    <div className="h-[180px] rounded-[18px] bg-black flex items-center justify-center text-[#9ca3af] text-sm border border-[#1f1f1f]">
+      Ảnh gốc của bạn
+    </div>
 
-            <div className="flex items-center justify-center bg-black rounded-xl h-[170px] text-slate-500 text-sm">
-              Ảnh gốc của bạn
-            </div>
+    {/* ẢNH MUỐN THAY */}
+    <div className="h-[180px] rounded-[18px] bg-black flex items-center justify-center text-[#9ca3af] text-sm border border-[#1f1f1f]">
+      Ảnh muốn thay mặt
+    </div>
 
-            <div className="flex items-center justify-center bg-black rounded-xl h-[170px] text-slate-500 text-sm">
-              Ảnh muốn thay mặt
-            </div>
+    {/* AVATAR TRÒN GIỮA */}
+    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+      <div className="w-[54px] h-[54px] rounded-full bg-lime-400 flex items-center justify-center text-black font-semibold shadow-lg border-[4px] border-[#0b0b0b]">
+        ❄️
+      </div>
+      <div className="flex justify-center mt-1 text-lime-400 text-xl">↔</div>
+    </div>
 
-            {/* ICON TRÒN Ở GIỮA */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="relative">
-                <div className="h-14 w-14 rounded-full bg-lime-400 flex items-center justify-center text-black font-bold text-xs">
-                  Ảnh<br />đại diện
-                </div>
-                <div className="absolute left-1/2 -translate-x-1/2 top-full text-lime-400 text-xl">
-                  ↔
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+  </div>
+</div>
+
 
         {/* STEP 1 */}
         <div className="mt-4">
