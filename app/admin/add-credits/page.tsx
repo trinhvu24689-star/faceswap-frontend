@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 const API_URL = "https://faceswap-backend-clean.fly.dev";
-const ADMIN_KEY = "ZENITHADMIN"; // ✅ KEY CỐ ĐỊNH CHO VK
+const ADMIN_KEY = "ADMIN_SECRET_1997"; // ✅ KEY CỐ ĐỊNH CHO VK
 
 export default function AdminAddCredits() {
   const [userId, setUserId] = useState("");
