@@ -89,6 +89,8 @@ export default function SwapPage() {
   </svg>
 
 </div>
+</div>
+</div>
 
         {/* STEP 1 */}
         <div className="mt-4">
