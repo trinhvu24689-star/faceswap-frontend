@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import HamburgerMenu from "@/components/HamburgerMenu";
+import SwapPreview from "@/components/SwapPreview";
 
 const API_URL = "https://faceswap-backend-clean.fly.dev";
 
@@ -29,17 +30,14 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // ====== USER + CREDITS ======
   const [userId, setUserId] = useState<string | null>(null);
   const [credits, setCredits] = useState<number>(0);
   const [loadingCredits, setLoadingCredits] = useState(true);
-
-  // ====== SHOP ======
   const [showShop, setShowShop] = useState(false);
 
   useEffect(() => {
     const init = async () => {
-      let uid: string | null = localStorage.getItem("faceswap_user_id");
+      let uid = localStorage.getItem("faceswap_user_id");
 
       try {
         if (!uid) {
@@ -47,10 +45,7 @@ export default function Home() {
           localStorage.setItem("faceswap_user_id", uid);
         }
 
-        const res = await fetch(
-          `${API_URL}/credits?user_id=${uid}`
-        );
-
+        const res = await fetch(`${API_URL}/credits?user_id=${uid}`);
         if (res.ok) {
           const data = await res.json();
           if (typeof data?.credits === "number") {
@@ -68,7 +63,6 @@ export default function Home() {
     init();
   }, []);
 
-  // =================== ẢNH ===================
   const handleSwap = async () => {
     if (!sourceFile || !targetFile) {
       setError("Select Full 2 Picturer 😘");
@@ -121,7 +115,6 @@ export default function Home() {
       <div className="fixed inset-0 -z-10 bg-gradient-to-b from-black via-[#121212] to-[#050505]" />
 
       <main className="w-full max-w-[480px] px-3 py-4 text-white">
-        {/* HEADER */}
         <header className="rounded-2xl bg-[#111111] border border-[#2b2b2b] px-3 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-xl bg-lime-400 flex items-center justify-center text-black font-bold text-xs">
@@ -148,7 +141,10 @@ export default function Home() {
           </div>
         </header>
 
-        {/* NÚT VIDEO VÔ HIỆU */}
+        {/* PREVIEW ẢNH MẪU */}
+        <SwapPreview />
+
+        {/* NÚT VIDEO */}
         <div className="mt-3 flex rounded-2xl overflow-hidden border border-[#2a2a2a] bg-[#181818] text-[12px] font-medium">
           <button className="flex-1 py-2 text-center bg-lime-400 text-black">
             Hoán đổi khuôn mặt ảnh
@@ -164,16 +160,8 @@ export default function Home() {
         {/* UPLOAD */}
         <section className="mt-4 rounded-3xl bg-[#181818] border border-[#2a2a2a] px-3 pt-3 pb-4">
           <div className="grid grid-cols-2 gap-2 mb-3">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setSourceFile(e.target.files?.[0] || null)}
-            />
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setTargetFile(e.target.files?.[0] || null)}
-            />
+            <input type="file" accept="image/*" onChange={(e) => setSourceFile(e.target.files?.[0] || null)} />
+            <input type="file" accept="image/*" onChange={(e) => setTargetFile(e.target.files?.[0] || null)} />
           </div>
 
           <button
@@ -193,10 +181,7 @@ export default function Home() {
 
         {resultImg && (
           <section className="mt-4 rounded-3xl bg-[#181818] border px-3 py-3">
-            <img
-              src={resultImg}
-              className="w-full object-contain rounded-xl"
-            />
+            <img src={resultImg} className="w-full object-contain rounded-xl" />
             <a
               href={resultImg}
               download
@@ -207,43 +192,9 @@ export default function Home() {
           </section>
         )}
 
-        {/* SHOP MODAL */}
-        {showShop && (
-          <div
-            className="fixed inset-0 z-40 bg-black/70 flex items-end"
-            onClick={() => setShowShop(false)}
-          >
-            <div
-              className="w-full bg-[#111] rounded-t-3xl px-4 pt-4 pb-6"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="font-semibold mb-3">Shop Bông Tuyết</div>
-              <div className="space-y-2">
-                {CREDIT_PACKS.map((p) => (
-                  <div
-                    key={p.id}
-                    className="flex justify-between bg-[#181818] px-3 py-2 rounded-xl"
-                  >
-                    <div>
-                      <div className="font-semibold">{p.label}</div>
-                      <div className="text-[10px] text-slate-400">
-                        Nhận {p.credits} ❄️
-                      </div>
-                    </div>
-                    <div className="text-lime-300">{p.price}</div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-4 text-[11px] text-yellow-300">
-                ⚠️ Chuyển khoản → Báo Admin → Admin cộng ❄️ nha
-              </div>
-            </div>
-          </div>
-        )}
-
         <footer className="mt-4 text-[10px] text-center text-slate-400">
-          ZenitSwap © 2025
+          ZenitSwap © 2025 
+Zalo: 085.684.8557 / Email: huuxhoang@gmail.com
         </footer>
       </main>
     </div>
