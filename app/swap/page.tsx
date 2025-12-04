@@ -74,15 +74,15 @@ export default function SwapPage() {
 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none">
 
   {/* Vòng tròn rỗng viền mỏng */}
-  <div className="w-[50px] h-[50px] rounded-full bg-transparent border border-lime-400 flex items-center justify-center text-lime-400 text-[11px] font-medium shadow-none">
+  <div className="w-[58px] h-[58px] rounded-full bg-transparent border border-lime-400 flex items-center justify-center text-lime-400 text-[11px] font-medium shadow-none">
     ❄️
   </div>
 
   {/* Mũi tên như ảnh */}
-  <svg width="22" height="12" viewBox="0 0 26 14" className="mt-0.5">
+  <svg width="28" height="16" viewBox="0 0 26 14" className="mt-1">
     <path d="M1 7H22M22 7L18 3M22 7L18 11" 
       stroke="#A3FF00" 
-      strokeWidth="1.5" 
+      strokeWidth="2.6" 
       strokeLinecap="round" 
       strokeLinejoin="round"
     />
