@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 
 const API_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "https://faceswap-server.onrender.com";
+  process.env.NEXT_PUBLIC_BACKEND_URL || "https://faceswap-backend-clean.fly.dev"
 
 type Theme = "dark" | "light";
 

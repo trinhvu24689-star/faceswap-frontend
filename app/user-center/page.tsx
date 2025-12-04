@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 const API_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL ||
-  "https://faceswap-server.onrender.com";
+  "https://faceswap-backend-clean.fly.dev"
 
 const LOCAL_KEY = "faceswap_user_id";
 
