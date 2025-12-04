@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import HamburgerMenu from "@/components/HamburgerMenu";
-import SwapPreview from "@/components/SwapPreview";
 
 const API_URL = "https://faceswap-backend-clean.fly.dev";
 
@@ -141,10 +140,6 @@ export default function Home() {
           </div>
         </header>
 
-        {/* PREVIEW ẢNH MẪU */}
-        <SwapPreview source={sourceFile} target={targetFile} />
-
-        {/* NÚT VIDEO */}
         <div className="mt-3 flex rounded-2xl overflow-hidden border border-[#2a2a2a] bg-[#181818] text-[12px] font-medium">
           <button className="flex-1 py-2 text-center bg-lime-400 text-black">
             Hoán đổi khuôn mặt ảnh
@@ -157,11 +152,18 @@ export default function Home() {
           </button>
         </div>
 
-        {/* UPLOAD */}
         <section className="mt-4 rounded-3xl bg-[#181818] border border-[#2a2a2a] px-3 pt-3 pb-4">
           <div className="grid grid-cols-2 gap-2 mb-3">
-            <input type="file" accept="image/*" onChange={(e) => setSourceFile(e.target.files?.[0] || null)} />
-            <input type="file" accept="image/*" onChange={(e) => setTargetFile(e.target.files?.[0] || null)} />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setSourceFile(e.target.files?.[0] || null)}
+            />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setTargetFile(e.target.files?.[0] || null)}
+            />
           </div>
 
           <button
@@ -181,11 +183,16 @@ export default function Home() {
 
         {resultImg && (
           <section className="mt-4 rounded-3xl bg-[#181818] border px-3 py-3">
-            <img src={resultImg} className="w-full object-contain rounded-xl" />
+            <img
+              src={resultImg}
+              alt="Kết quả hoán đổi"
+              className="w-full object-contain rounded-xl"
+            />
+
             <a
               href={resultImg}
-              download
-              className="mt-3 block text-center bg-lime-400 text-black py-2 rounded-xl"
+              download="faceswap_result.jpg"
+              className="mt-3 block text-center bg-lime-400 text-black py-2 rounded-xl font-semibold"
             >
               ⬇ Tải ảnh về máy
             </a>
@@ -194,7 +201,7 @@ export default function Home() {
 
         <footer className="mt-4 text-[10px] text-center text-slate-400">
           ZenitSwap © 2025 
-Zalo: 085.684.8557 / Email: huuxhoang@gmail.com
+          Zalo: 085.684.8557 / Email: huuxhoang@gmail.com
         </footer>
       </main>
     </div>
