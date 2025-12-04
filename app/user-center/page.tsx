@@ -1,202 +1,227 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import HamburgerMenu from "@/components/HamburgerMenu";
 
-const API_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL ||
-  "https://faceswap-backend-clean.fly.dev"
+const API_URL = "https://faceswap-backend-clean.fly.dev";
 
-const LOCAL_KEY = "faceswap_user_id";
 
-type Profile = {
-  user_id: string;
-  credits: number;
-  created_at?: string | null;
-};
+// ====== CREDIT PACKS (CHỈ HIỂN THỊ) ======
+const CREDIT_PACKS = [
+  { id: "pack_36", label: "Gói 36❄️", credits: 36, price: "26.000đ" },
+  { id: "pack_70", label: "Gói 70❄️", credits: 70, price: "52.000đ" },
+  { id: "pack_150", label: "Gói 150❄️", credits: 150, price: "125.000đ" },
+  { id: "pack_200", label: "Gói 200❄️", credits: 200, price: "185.000đ" },
+  { id: "pack_400", label: "Gói 400❄️", credits: 400, price: "230.000đ" },
+  { id: "pack_550", label: "Gói 550❄️", credits: 550, price: "375.000đ" },
+  { id: "pack_750", label: "Gói 750❄️", credits: 750, price: "510.000đ" },
+  { id: "pack_999", label: "Gói 999❄️", credits: 999, price: "760.000đ" },
+  { id: "pack_1500", label: "Gói 1.500❄️", credits: 1500, price: "1.050.000đ" },
+  { id: "pack_2600", label: "Gói 2.600❄️", credits: 2600, price: "1.500.000đ" },
+  { id: "pack_4000", label: "Gói 4.000❄️", credits: 4000, price: "2.400.000đ" },
+  { id: "pack_7600", label: "Gói 7.600❄️", credits: 7600, price: "3.600.000đ" },
+  { id: "pack_10000", label: "Gói 10.000❄️", credits: 10000, price: "5.000.000đ" },
+];
 
-export default function UserCenterPage() {
+
+export default function Home() {
+  const [sourceFile, setSourceFile] = useState<File | null>(null);
+  const [targetFile, setTargetFile] = useState<File | null>(null);
+  const [resultImg, setResultImg] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const [userId, setUserId] = useState<string | null>(null);
-  const [credits, setCredits] = useState<number | null>(null);
-  const [createdAt, setCreatedAt] = useState<string | null>(null);
+  const [credits, setCredits] = useState<number>(0);
+  const [loadingCredits, setLoadingCredits] = useState(true);
 
-  const [busy, setBusy] = useState(false);
-  const [inputId, setInputId] = useState("");
-  const [message, setMessage] = useState<string | null>(null);
-
-  // --------- AUTO LOAD UID (FIX LỖI 1) ----------
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(LOCAL_KEY);
-      if (!stored) return;
+    const init = async () => {
+      let uid = localStorage.getItem("faceswap_user_id");
 
-      // Không xoá UID nếu lỗi — giữ để user còn copy
-      fetchProfile(stored, false);
-    } catch (err) {
-      console.error("Init error:", err);
-    }
+      try {
+        if (!uid) {
+          uid = `guest-${Date.now()}`;
+          localStorage.setItem("faceswap_user_id", uid);
+        }
+
+        const res = await fetch(`${API_URL}/credits?user_id=${uid}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (typeof data?.credits === "number") {
+            setCredits(data.credits);
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setUserId(uid);
+        setLoadingCredits(false);
+      }
+    };
+
+    init();
   }, []);
 
-  async function fetchProfile(id: string, showMessage = true) {
-    try {
-      const res = await fetch(`${API_URL}/profile`, {
-        headers: { "x-user-id": id },
-      });
-
-      if (!res.ok) {
-        if (showMessage) {
-          setMessage("User ID không tồn tại trên server.");
-        }
-        return;
-      }
-
-      const data: Profile = await res.json();
-      setUserId(data.user_id);
-      setCredits(data.credits);
-      setCreatedAt(data.created_at ?? null);
-      setInputId(data.user_id);
-      setMessage(null);
-    } catch (err) {
-      console.error(err);
-      if (showMessage)
-        setMessage("Không tải được tài khoản. Kiểm tra kết nối mạng.");
+  const handleSwap = async () => {
+    if (!sourceFile || !targetFile) {
+      setError("Select Full 2 Picturer 😘");
+      return;
     }
-  }
 
-  async function handleCreateNewAccount() {
-    try {
-      setBusy(true);
-      setMessage(null);
-
-      const res = await fetch(`${API_URL}/auth/guest`, {
-        method: "POST",
-      });
-
-      if (!res.ok) throw new Error("fail");
-
-      const data = await res.json();
-
-      localStorage.setItem(LOCAL_KEY, data.user_id);
-      setUserId(data.user_id);
-      setCredits(data.credits);
-      setInputId(data.user_id);
-      setMessage("Tạo tài khoản mới thành công.");
-    } catch {
-      setMessage("Không tạo được tài khoản mới.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function handleUseExistingId() {
-    const id = inputId.trim();
-    if (!id) {
-      setMessage("Hãy nhập user_id.");
+    if (!userId) {
+      setError("Không xác định được tài khoản, tải lại trang thử nhé 💦");
       return;
     }
 
     try {
-      setBusy(true);
+      setLoading(true);
+      setError(null);
+      setResultImg(null);
 
-      const res = await fetch(`${API_URL}/profile`, {
-        headers: { "x-user-id": id },
+      const formData = new FormData();
+      formData.append("source_image", sourceFile);
+      formData.append("target_image", targetFile);
+      formData.append("user_id", userId);
+
+      const res = await fetch(`${API_URL}/faceswap`, {
+        method: "POST",
+        body: formData,
       });
 
       if (!res.ok) {
-        setMessage("User ID không tồn tại.");
-        return;
+        const data = await res.json();
+        throw new Error(data?.detail || "Lỗi server");
       }
 
       const data = await res.json();
+      if (typeof data?.credits_left === "number") {
+        setCredits(data.credits_left);
+      }
 
-      localStorage.setItem(LOCAL_KEY, id);
-      setUserId(data.user_id);
-      setCredits(data.credits);
-      setCreatedAt(data.created_at ?? null);
-      setMessage("Đăng nhập thành công.");
+      const imgRes = await fetch(`${API_URL}${data.result_url}`);
+      const blob = await imgRes.blob();
+      const url = URL.createObjectURL(blob);
+      setResultImg(url);
+    } catch (e: any) {
+      setError(e?.message || "Có lỗi gì đó rồi :<");
     } finally {
-      setBusy(false);
+      setLoading(false);
     }
-  }
-
-  function handleLogout() {
-    localStorage.removeItem(LOCAL_KEY);
-    setUserId(null);
-    setCredits(null);
-    setCreatedAt(null);
-    setInputId("");
-    setMessage("Đã xoá user_id khỏi trình duyệt.");
-  }
+  };
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-slate-900 to-black flex items-center justify-center px-4 py-10">
-      <div className="w-full max-w-md rounded-3xl bg-white/95 shadow-2xl border border-white/20 backdrop-blur px-6 py-7">
+    <div className="relative flex justify-center bg-[#111] min-h-screen">
+      <div className="fixed inset-0 -z-10 bg-gradient-to-b from-black via-[#121212] to-[#050505]" />
 
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-sky-400 to-violet-500 bg-clip-text text-transparent">
-          User Center
-        </h1>
-        <p className="text-xs text-slate-500 mt-1">
-          Quản lý user_id và trạng thái tài khoản.
-        </p>
+      <main className="w-full max-w-[420px] px-3 py-4 text-white">
+        {/* HEADER */}
+        <header className="rounded-2xl bg-[#111111] border border-[#2b2b2b] px-3 py-2 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded-xl bg-lime-400 flex items-center justify-center text-black font-bold text-xs">
+              🐦‍🔥
+            </div>
+            <div className="flex flex-col leading-tight">
+              <span className="text-xs font-semibold">ZenitSwap AI</span>
+              <span className="text-[10px] text-lime-300/90">
+                Hoán Đổi Khuôn Mặt Bằng AI
+              </span>
+            </div>
+          </div>
 
-        {/* CURRENT USER BOX */}
-        <div className="mt-4 p-4 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm">
-          <p className="text-sm">
-            <span className="font-semibold">User ID:</span>{" "}
-            <span className="break-all">{userId ?? "(chưa đăng nhập)"}</span>
-          </p>
-          <p className="text-sm mt-1">
-            <span className="font-semibold">Credits:</span> {credits ?? 0}
-          </p>
-          {createdAt && (
-            <p className="text-xs text-slate-400 mt-1">
-              Tạo lúc: {new Date(createdAt).toLocaleString()}
-            </p>
-          )}
+          <div className="flex items-center gap-2 text-[11px]">
+            <div className="flex items-center gap-1 bg-[#222] px-2 py-1 rounded-full">
+              <span className="text-yellow-300">❄️</span>
+              <span>{loadingCredits ? "..." : credits}</span>
+            </div>
+            <HamburgerMenu />
+          </div>
+        </header>
+
+        {/* TAB */}
+        <div className="mt-3 flex rounded-2xl overflow-hidden border border-[#2a2a2a] bg-[#181818] text-[12px] font-medium">
+          <button className="flex-1 py-2 text-center bg-lime-400 text-black">
+            Hoán đổi khuôn mặt ảnh
+          </button>
+          <button
+            disabled
+            className="flex-1 py-2 text-center bg-[#252525] text-slate-600 cursor-not-allowed"
+          >
+            Hoán đổi khuôn mặt video (Đang bảo trì)
+          </button>
         </div>
 
-        {/* INPUT UID */}
-        <label className="block mt-5 text-sm font-semibold text-slate-700">
-          Đăng nhập bằng user_id
-        </label>
+        {/* KHUNG DEMO */}
+        <div className="mt-4 rounded-3xl bg-[#181818] border border-[#2a2a2a] p-3">
+          <div className="aspect-video rounded-xl bg-black flex items-center justify-center text-slate-500 text-xs">
+            Demo kết quả
+          </div>
+        </div>
+
+        {/* STEP 1 */}
+        <div className="mt-4 text-sm">
+          <span className="text-lime-400 font-bold mr-2">1</span>
+          Tải lên hình ảnh gốc có khuôn mặt
+        </div>
         <input
-          value={inputId}
-          onChange={(e) => setInputId(e.target.value)}
-          placeholder="Dán user_id tại đây"
-          className="w-full mt-1 rounded-xl border border-slate-300 py-2 px-3 text-sm focus:ring-2 focus:ring-violet-400 outline-none"
+          type="file"
+          accept="image/*"
+          onChange={(e) => setSourceFile(e.target.files?.[0] || null)}
+          className="mt-2 w-full rounded-xl bg-lime-400 text-black font-semibold py-2"
         />
 
+        {/* STEP 2 */}
+        <div className="mt-4 text-sm">
+          <span className="text-lime-400 font-bold mr-2">2</span>
+          Tải lên ảnh khuôn mặt
+        </div>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setTargetFile(e.target.files?.[0] || null)}
+          className="mt-2 w-full rounded-xl bg-lime-400 text-black font-semibold py-2"
+        />
+
+        {/* STEP 3 */}
+        <div className="mt-4 text-sm">
+          <span className="text-lime-400 font-bold mr-2">3</span>
+          Bắt đầu hoán đổi khuôn mặt
+        </div>
         <button
-          onClick={handleUseExistingId}
-          disabled={busy}
-          className="w-full mt-3 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold shadow-md disabled:opacity-60"
+          onClick={handleSwap}
+          disabled={loading}
+          className="mt-2 w-full rounded-xl bg-lime-400 text-black font-semibold py-2"
         >
-          Dùng user_id này
+          {loading ? "Đang hoán đổi..." : "Hoán đổi khuôn mặt"}
         </button>
 
-        {/* CREATE NEW */}
-        <button
-          onClick={handleCreateNewAccount}
-          disabled={busy}
-          className="w-full mt-2 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold shadow-md disabled:opacity-60"
-        >
-          Tạo tài khoản mới
-        </button>
-
-        {/* LOGOUT */}
-        <button
-          onClick={handleLogout}
-          disabled={busy}
-          className="w-full mt-2 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-600 text-xs font-medium disabled:opacity-60"
-        >
-          Xoá user_id khỏi hệ thống
-        </button>
-
-        {message && (
-          <div className="mt-3 p-3 rounded-xl bg-yellow-50 border border-yellow-200 text-xs text-slate-700">
-            {message}
+        {error && (
+          <div className="mt-3 text-[12px] text-red-100 bg-red-500/40 rounded-xl px-3 py-2">
+            {error}
           </div>
         )}
-      </div>
+
+        {resultImg && (
+          <section className="mt-4 rounded-3xl bg-[#181818] border px-3 py-3">
+            <img
+              src={resultImg}
+              alt="Kết quả hoán đổi"
+              className="w-full object-contain rounded-xl"
+            />
+            <a
+              href={resultImg}
+              download="faceswap_result.jpg"
+              className="mt-3 block text-center bg-lime-400 text-black py-2 rounded-xl font-semibold"
+            >
+              ⬇ Tải ảnh về máy
+            </a>
+          </section>
+        )}
+
+        <footer className="mt-4 text-[10px] text-center text-slate-400">
+          ZenitSwap © 2025  
+          Zalo: 085.684.8557 / Email: huuxhoang@gmail.com
+        </footer>
+      </main>
     </div>
   );
-}
