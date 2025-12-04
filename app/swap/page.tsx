@@ -25,13 +25,13 @@ export default function SwapPage() {
   const [targetFile, setTargetFile] = useState<File | null>(null);
 
   return (
-    <div className="relative flex justify-center bg-[#111] min-h-screen">
-      <div className="fixed inset-0 -z-10 bg-gradient-to-b from-black via-[#121212] to-[#050505]" />
+    <div className="relative flex justify-center bg-[#0b0b0b] min-h-screen">
+      <main className="w-full max-w-[430px] px-4 py-4 text-white">
 
-      <main className="w-full max-w-[420px] px-3 py-4 text-white">
-        <header className="rounded-2xl bg-[#111111] border border-[#2b2b2b] px-3 py-2 flex items-center justify-between">
+        {/* HEADER */}
+        <header className="rounded-2xl bg-[#111] border border-[#2b2b2b] px-3 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-xl bg-lime-400 flex items-center justify-center text-black font-bold text-xs">
+            <div className="h-9 w-9 rounded-xl bg-lime-400 flex items-center justify-center text-black font-bold text-sm">
               🐦‍🔥
             </div>
             <div className="flex flex-col leading-tight">
@@ -51,43 +51,81 @@ export default function SwapPage() {
           </div>
         </header>
 
-        <div className="mt-3 flex rounded-2xl overflow-hidden border border-[#2a2a2a] bg-[#181818] text-[12px] font-medium">
-          <button className="flex-1 py-2 text-center bg-lime-400 text-black">
+        {/* TAB */}
+        <div className="mt-3 flex rounded-full overflow-hidden border border-[#2a2a2a] bg-[#1a1a1a] text-[12px] font-medium">
+          <button className="flex-1 py-2 text-center bg-lime-400 text-black rounded-full">
             Hoán đổi khuôn mặt ảnh
           </button>
-          <button disabled className="flex-1 py-2 text-center bg-[#252525] text-slate-600">
+          <button
+            disabled
+            className="flex-1 py-2 text-center bg-transparent text-slate-500"
+          >
             Hoán đổi khuôn mặt video
           </button>
         </div>
 
-        <div className="mt-4 rounded-3xl bg-[#181818] border border-[#2a2a2a] p-3">
-          <div className="aspect-video rounded-xl bg-black flex items-center justify-center text-slate-500 text-xs">
-            Demo kết quả
+        {/* PREVIEW */}
+        <div className="mt-4 rounded-[22px] bg-[#121212] border border-[#2a2a2a] p-3 shadow-inner">
+          <div className="aspect-video rounded-[18px] bg-black overflow-hidden flex">
+            <div className="w-1/2 h-full bg-cover bg-center" />
+            <div className="w-1/2 h-full bg-cover bg-center" />
           </div>
         </div>
 
-        <div className="mt-4">
-          <div className="text-sm text-lime-400 font-semibold">1 Tải lên hình ảnh gốc có khuôn mặt</div>
-          <input type="file" className="mt-2 w-full rounded-xl bg-lime-400 py-2" />
+        {/* STEP 1 */}
+        <div className="mt-4 flex items-start gap-2">
+          <div className="w-6 h-6 rounded-full bg-[#1f1f1f] flex items-center justify-center text-lime-400 text-xs font-bold">1</div>
+          <div className="flex-1">
+            <div className="text-sm text-lime-400 font-semibold">
+              Tải lên hình ảnh gốc có khuôn mặt
+            </div>
+            <input
+              type="file"
+              onChange={(e) => setSourceFile(e.target.files?.[0] || null)}
+              className="mt-2 w-full rounded-full bg-lime-400 text-black py-2 text-sm font-semibold text-center"
+            />
+            <div className="mt-1 text-[10px] text-slate-400">
+              PNG / JPG / JPEG / WEBP / GIF
+            </div>
+          </div>
         </div>
 
-        <div className="mt-4">
-          <div className="text-sm text-lime-400 font-semibold">2 Tải lên ảnh khuôn mặt</div>
-          <input type="file" className="mt-2 w-full rounded-xl bg-lime-400 py-2" />
+        {/* STEP 2 */}
+        <div className="mt-4 flex items-start gap-2">
+          <div className="w-6 h-6 rounded-full bg-[#1f1f1f] flex items-center justify-center text-lime-400 text-xs font-bold">2</div>
+          <div className="flex-1">
+            <div className="text-sm text-lime-400 font-semibold">
+              Tải lên ảnh khuôn mặt
+            </div>
+            <input
+              type="file"
+              onChange={(e) => setTargetFile(e.target.files?.[0] || null)}
+              className="mt-2 w-full rounded-full bg-lime-400 text-black py-2 text-sm font-semibold text-center"
+            />
+            <div className="mt-1 text-[10px] text-slate-400">
+              PNG / JPG / JPEG / WEBP
+            </div>
+          </div>
         </div>
 
-        <div className="mt-4">
-          <div className="text-sm text-lime-400 font-semibold">3 Bắt đầu hoán đổi khuôn mặt</div>
-          <button className="mt-2 w-full rounded-xl bg-lime-400 text-black py-2">
+        {/* STEP 3 */}
+        <div className="mt-5">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-6 h-6 rounded-full bg-[#1f1f1f] flex items-center justify-center text-lime-400 text-xs font-bold">3</div>
+            <div className="text-sm text-lime-400 font-semibold">
+              Bắt đầu hoán đổi khuôn mặt
+            </div>
+          </div>
+          <button className="w-full rounded-full bg-lime-400 text-black py-3 text-sm font-bold">
             Hoán đổi khuôn mặt ›
           </button>
+          <div className="mt-2 text-[11px] text-slate-400 text-center">
+            Hạn ngạch miễn phí hàng ngày còn lại: Hình ảnh: 10
+          </div>
         </div>
 
-        <div className="mt-4 bg-red-600 text-white text-center text-sm py-2 rounded-xl">
-          Failed to fetch
-        </div>
-
-        <footer className="mt-6 text-[10px] text-center text-slate-400">
+        {/* FOOTER */}
+        <footer className="mt-5 text-[10px] text-center text-slate-400">
           ZenitSwap © 2025  
           Zalo: 085.684.8557 / Email: huuxhoang@gmail.com
         </footer>
