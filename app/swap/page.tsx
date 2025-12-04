@@ -156,7 +156,7 @@ export default function SwapPage() {
           </button>
 
           <div className="text-[11px] text-slate-400 mt-1">
-            Hạn ngạch miễn phí hàng ngày còn lại: Hình ảnh: 50
+            Hạn ngạch miễn phí hàng ngày còn lại: Hình ảnh: 10
           </div>
         </div>
 
