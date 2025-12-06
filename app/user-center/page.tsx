@@ -6,7 +6,8 @@ import HamburgerMenu from "@/components/HamburgerMenu";
 const API_URL = "https://faceswap-backend-clean.fly.dev";
 
 export default function UserCenter() {
-  const [userId, setUserId] = useState<string | null>(null);
+  const [userId, setUserId] = useState("");
+  const [credits, setCredits] = useState(0);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,15 +24,47 @@ export default function UserCenter() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // ================= USER ID CORE =================
-  useEffect(() => {
-    let uid = localStorage.getItem("faceswap_user_id");
-    if (!uid) {
-      uid = `guest-${Date.now()}`;
-      localStorage.setItem("faceswap_user_id", uid);
+const handleCreateUserId = async () => {
+  const res = await fetch(
+    "https://faceswap-backend-clean.fly.dev/auth/guest",
+    { method: "POST" }
+  );
+
+  const data = await res.json();
+
+  // ✅ CHỈ DÙNG 1 KEY DUY NHẤT
+  localStorage.setItem("faceswap_user_id", data.user_id);
+  setUserId(data.user_id);
+  setCredits(data.credits);
+
+  alert("Đã tạo User ID từ backend");
+};
+
+
+// ================= USER ID CORE =================
+useEffect(() => {
+  const uid = localStorage.getItem("faceswap_user_id");
+  if (uid) setUserId(uid);   // ✅ KHÔNG TỰ TẠO guest nữa
+}, []);
+
+const handleConfirmUserId = async () => {
+    const res = await fetch(`${API_URL}/me?user_id=${userId}`);
+
+    if (!res.ok) {
+      alert("User ID không tồn tại");
+      return;
     }
-    setUserId(uid);
-  }, []);
+
+    const data = await res.json();
+
+    const data = await res.json();
+
+    // 👉 LƯU LẠI USER ID HỢP LỆ
+    localStorage.setItem("faceswap_user_id", userId);
+    setCredits(data.credits);
+
+    alert("Đã đồng bộ User ID thành công");
+  };
 
   // ================= LOAD PROFILE =================
   useEffect(() => {
@@ -160,12 +193,15 @@ export default function UserCenter() {
 
     const res = await fetch(`${API_URL}/upload-avatar`, {
       method: "POST",
+      headers: {
+        "x-user-id": userId,   // ← HEADER BẮT BUỘC
+      },
       body: formData,
     });
 
     if (res.ok) {
       const data = await res.json();
-      setAvatar(data.url);
+      setAvatar(data.avatar.url);
     }
   };
 
@@ -192,6 +228,11 @@ export default function UserCenter() {
     <div className="relative min-h-screen bg-[#111] text-white flex justify-center">
       <main className="w-full max-w-[420px] px-4 py-4">
 
+        <div className="bg-yellow-200 text-black text-xs p-2 rounded mb-3">
+    Đăng ký và login trực tiếp:
+    Chọn tạo User ID → Nhập User ID → Nhập TK & MK → Bấm Register → Bấm Verify → Bấm Login
+  </div>
+
         <header className="flex justify-between items-center mb-4">
           <h1 className="text-lg font-bold">User Center</h1>
           <HamburgerMenu />
@@ -214,6 +255,31 @@ export default function UserCenter() {
             <div>User ID: {userId}</div>
             <div>VIP: {vip}</div>
           </div>
+
+          <div className="space-y-2">
+
+  <button
+    onClick={handleCreateUserId}
+    className="w-full bg-lime-400 text-black py-2 rounded"
+  >
+    Tạo User ID
+  </button>
+
+  <input
+    value={userId}
+    onChange={(e) => setUserId(e.target.value)}
+    placeholder="Nhập User ID"
+    className="w-full p-2 rounded bg-[#222]"
+  />
+
+  <button
+    onClick={handleConfirmUserId}
+    className="w-full bg-sky-400 text-black py-2 rounded"
+  >
+    Xác nhận User ID
+  </button>
+
+</div>
 
           <input
             className="w-full p-2 rounded bg-[#222]"

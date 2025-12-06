@@ -24,6 +24,36 @@ const CREDIT_PACKS = [
 export default function SwapPage() {
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [targetFile, setTargetFile] = useState<File | null>(null);
+  const [sourcePreview, setSourcePreview] = useState<string | null>(null);
+  const [targetPreview, setTargetPreview] = useState<string | null>(null);
+  const [resultImg, setResultImg] = useState<string | null>(null);
+
+
+const handleSwap = async () => {
+  if (!sourceFile || !targetFile) {
+    alert("Thiếu ảnh");
+    return;
+  }
+
+  const form = new FormData();
+  form.append("source_image", sourceFile);
+  form.append("target_image", targetFile);
+
+  const res = await fetch(
+    "https://faceswap-backend-clean.fly.dev/faceswap/full",
+    {
+      method: "POST",
+      headers: {
+        "x-user-id": localStorage.getItem("user_id") || "",
+      },
+      body: form,
+    }
+  );
+
+
+  const blob = await res.blob();
+  setResultImg(URL.createObjectURL(blob));
+};
 
   return (
     <div className="relative flex justify-center bg-[#0b0b0b] min-h-screen text-white">
@@ -60,20 +90,28 @@ export default function SwapPage() {
 <div className="mt-4 rounded-[28px] bg-[#0e0e0e] border border-[#2a2a2a] p-4 shadow-[inset_0_0_40px_rgba(0,0,0,0.85)]">
   <div className="relative grid grid-cols-2 gap-4 rounded-[22px] bg-[#0b0b0b] p-4 border border-[#1f1f1f]">
     
-    {/* ẢNH GỐC */}
-    <div className="h-[180px] rounded-[18px] bg-black flex items-center justify-center text-[#9ca3af] text-sm border border-[#1f1f1f]">
-      Ảnh gốc của bạn
-    </div>
+{/* ẢNH GỐC */}
+<div className="h-[180px] rounded-[18px] bg-black flex items-center justify-center border border-[#1f1f1f] overflow-hidden">
+  {sourcePreview ? (
+    <img src={sourcePreview} className="w-full h-full object-cover" />
+  ) : (
+    <span className="text-[#9ca3af] text-sm">Ảnh gốc của bạn</span>
+  )}
+</div>
 
-    {/* ẢNH MUỐN THAY */}
-    <div className="h-[180px] rounded-[18px] bg-black flex items-center justify-center text-[#9ca3af] text-sm border border-[#1f1f1f]">
-      Ảnh muốn thay mặt
-    </div>
+{/* ẢNH MUỐN THAY */}
+<div className="h-[180px] rounded-[18px] bg-black flex items-center justify-center border border-[#1f1f1f] overflow-hidden">
+  {targetPreview ? (
+    <img src={targetPreview} className="w-full h-full object-cover" />
+  ) : (
+    <span className="text-[#9ca3af] text-sm">Ảnh muốn thay mặt</span>
+  )}
+</div>
 
     {/* AVATAR TRÒN GIỮA */}
 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none">
 
-  {/* Vòng tròn rỗng viền mỏng */}
+{/* Vòng tròn rỗng viền mỏng */}
   <div className="w-[55px] h-[55px] rounded-full bg-transparent border-[3px] border-lime-400 flex items-center justify-center text-lime-400 text-[19px] font-medium shadow-[0_0_18px_rgba(163,255,0,0.85)]">
     ❄️
   </div>
@@ -125,7 +163,12 @@ export default function SwapPage() {
               type="file"
               hidden
               accept="image/*"
-              onChange={(e) => setSourceFile(e.target.files?.[0] || null)}
+              onChange={(e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  setSourceFile(file);
+  setSourcePreview(URL.createObjectURL(file));
+}}
             />
           </label>
           <div className="text-[11px] text-slate-400 mt-1">
@@ -150,7 +193,12 @@ export default function SwapPage() {
               type="file"
               hidden
               accept="image/*"
-              onChange={(e) => setTargetFile(e.target.files?.[0] || null)}
+              onChange={(e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  setTargetFile(file);
+  setTargetPreview(URL.createObjectURL(file));
+}}
             />
           </label>
           <div className="text-[11px] text-slate-400 mt-1">
@@ -169,7 +217,9 @@ export default function SwapPage() {
             </span>
           </div>
 
-          <button className="w-full bg-lime-400 text-black font-bold py-3 rounded-full mt-1">
+          <button
+            onClick={handleSwap}
+            className="w-full bg-lime-400 text-black font-bold py-3 rounded-full mt-1">
             Hoán đổi khuôn mặt →
           </button>
 
