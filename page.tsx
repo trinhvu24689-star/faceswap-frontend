@@ -1,171 +1,334 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import HamburgerMenu from "@/components/HamburgerMenu";
 
-// ====== CREDIT PACKS (CHỈ HIỂN THỊ) ======
-const CREDIT_PACKS = [
-  { id: "pack_36", label: "Gói 36❄️", credits: 36, price: "26.000đ" },
-  { id: "pack_70", label: "Gói 70❄️", credits: 70, price: "52.000đ" },
-  { id: "pack_150", label: "Gói 150❄️", credits: 150, price: "125.000đ" },
-  { id: "pack_200", label: "Gói 200❄️", credits: 200, price: "185.000đ" },
-  { id: "pack_400", label: "Gói 400❄️", credits: 400, price: "230.000đ" },
-  { id: "pack_550", label: "Gói 550❄️", credits: 550, price: "375.000đ" },
-  { id: "pack_750", label: "Gói 750❄️", credits: 750, price: "510.000đ" },
-  { id: "pack_999", label: "Gói 999❄️", credits: 999, price: "760.000đ" },
-  { id: "pack_1500", label: "Gói 1.500❄️", credits: 1500, price: "1.050.000đ" },
-  { id: "pack_2600", label: "Gói 2.600❄️", credits: 2600, price: "1.500.000đ" },
-  { id: "pack_4000", label: "Gói 4.000❄️", credits: 4000, price: "2.400.000đ" },
-  { id: "pack_7600", label: "Gói 7.600❄️", credits: 7600, price: "3.600.000đ" },
-  { id: "pack_10000", label: "Gói 10.000❄️", credits: 10000, price: "5.000.000đ" },
-];
+const API_URL = "https://faceswap-backend-clean.fly.dev";
+
+export default function UserCenter() {
+  const [userId, setUserId] = useState("");
+  const [credits, setCredits] = useState(0);
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+
+  const [avatar, setAvatar] = useState("");
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+
+  const [vip, setVip] = useState("FREE");
+  const [profile, setProfile] = useState<any>(null);
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+const handleCreateUserId = async () => {
+  const res = await fetch(
+    "https://faceswap-backend-clean.fly.dev/auth/guest",
+    { method: "POST" }
+  );
+
+  const data = await res.json();
+
+  // ✅ CHỈ DÙNG 1 KEY DUY NHẤT
+  localStorage.setItem("faceswap_user_id", data.user_id);
+  setUserId(data.user_id);
+  setCredits(data.credits);
+
+  alert("Đã tạo User ID từ backend");
+};
 
 
-export default function SwapPage() {
-  const [sourceFile, setSourceFile] = useState<File | null>(null);
-  const [targetFile, setTargetFile] = useState<File | null>(null);
+// ================= USER ID CORE =================
+useEffect(() => {
+  const uid = localStorage.getItem("faceswap_user_id");
+  if (uid) setUserId(uid);   // ✅ KHÔNG TỰ TẠO guest nữa
+}, []);
 
+const handleConfirmUserId = async () => {
+    const res = await fetch(`${API_URL}/me?user_id=${userId}`);
+
+    if (!res.ok) {
+      alert("User ID không tồn tại");
+      return;
+    }
+
+    const data = await res.json();
+
+    const data = await res.json();
+
+    // 👉 LƯU LẠI USER ID HỢP LỆ
+    localStorage.setItem("faceswap_user_id", userId);
+    setCredits(data.credits);
+
+    alert("Đã đồng bộ User ID thành công");
+  };
+
+  // ================= LOAD PROFILE =================
+  useEffect(() => {
+    if (!userId) return;
+
+    const loadProfile = async () => {
+      try {
+        const res = await fetch(`${API_URL}/me?user_id=${userId}`);
+        if (!res.ok) return;
+
+        const data = await res.json();
+        setProfile(data);
+        setVip(data?.vip || "FREE");
+
+        if (data?.avatar) {
+          setAvatar(data.avatar);
+        } else {
+          const rand = Math.floor(Math.random() * 10) + 1;
+          setAvatar(`/avatars/random-${rand}.png`);
+        }
+      } catch {}
+    };
+
+    loadProfile();
+  }, [userId]);
+
+  // ================= REGISTER =================
+  const handleRegister = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const res = await fetch(`${API_URL}/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: userId, email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data?.detail || "Register failed");
+      }
+
+      setOtpSent(true);
+      alert("Đăng ký thành công, vui lòng xác thực OTP");
+    } catch (e: any) {
+      setError(e?.message || "Lỗi đăng ký");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ================= LOGIN =================
+  const handleLogin = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const res = await fetch(`${API_URL}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data?.detail || "Login failed");
+      }
+
+      const uid = data?.user_id || data?.id;
+      if (!uid) throw new Error("Không nhận được user_id");
+
+      localStorage.setItem("faceswap_user_id", uid);
+      setUserId(uid);
+      location.reload();
+    } catch (e: any) {
+      setError(e?.message || "Lỗi đăng nhập");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ================= SEND OTP =================
+  const handleSendOTP = async () => {
+    try {
+      setLoading(true);
+      await fetch(`${API_URL}/send-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, user_id: userId }),
+      });
+      setOtpSent(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ================= VERIFY OTP =================
+  const handleVerifyOTP = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_URL}/verify-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp }),
+      });
+
+      if (!res.ok) throw new Error("OTP fail");
+      alert("OTP xác thực thành công");
+    } catch {
+      alert("OTP sai");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ================= UPLOAD AVATAR =================
+  const handleUploadAvatar = async () => {
+    if (!avatarFile || !userId) return;
+
+    const formData = new FormData();
+    formData.append("avatar", avatarFile);
+    formData.append("user_id", userId);
+
+    const res = await fetch(`${API_URL}/upload-avatar`, {
+      method: "POST",
+      headers: {
+        "x-user-id": userId,   // ← HEADER BẮT BUỘC
+      },
+      body: formData,
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      setAvatar(data.avatar.url);
+    }
+  };
+
+  // ================= DELETE ACCOUNT =================
+  const handleDeleteAccount = async () => {
+    if (!userId) return;
+
+    if (!confirm("XÓA TÀI KHOẢN VĨNH VIỄN?")) return;
+
+    await fetch(`${API_URL}/delete-account`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: userId }),
+    });
+
+    localStorage.removeItem("faceswap_user_id");
+    const newId = `guest-${Date.now()}`;
+    localStorage.setItem("faceswap_user_id", newId);
+    location.reload();
+  };
+
+  // ================= UI =================
   return (
-    <div className="relative flex justify-center bg-[#0b0b0b] min-h-screen text-white">
-      <div className="fixed inset-0 -z-10 bg-gradient-to-b from-black via-[#0f0f0f] to-black" />
+    <div className="relative min-h-screen bg-[#111] text-white flex justify-center">
+      <main className="w-full max-w-[420px] px-4 py-4">
 
-      <main className="w-full max-w-[430px] px-3 py-4">
-        {/* HEADER */}
-        <header className="rounded-2xl bg-[#111] border border-[#2b2b2b] px-3 py-2 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-xl bg-lime-400 flex items-center justify-center text-black font-bold text-xs">
-              🐦‍🔥
-            </div>
-            <div className="flex flex-col leading-tight">
-              <span className="text-xs font-semibold">ZenitSwap AI</span>
-              <span className="text-[10px] text-lime-300/90">
-                Hoán Đổi Khuôn Mặt Bằng AI
-              </span>
-            </div>
-          </div>
+        <div className="bg-yellow-200 text-black text-xs p-2 rounded mb-3">
+    Đăng ký và login trực tiếp:
+    Chọn tạo User ID → Nhập User ID → Nhập TK & MK → Bấm Register → Bấm Verify → Bấm Login
+  </div>
+
+        <header className="flex justify-between items-center mb-4">
+          <h1 className="text-lg font-bold">User Center</h1>
           <HamburgerMenu />
         </header>
 
-        {/* TAB */}
-        <div className="mt-3 flex rounded-full overflow-hidden bg-[#1c1c1c] border border-[#2a2a2a] text-[13px]">
-          <div className="flex-1 py-2 text-center bg-lime-400 text-black rounded-full">
-            Hoán đổi khuôn mặt ảnh
+        <div className="bg-[#1b1b1b] p-4 rounded-2xl space-y-4">
+
+          <div className="flex items-center gap-4">
+            <img
+              src={avatar}
+              className="w-16 h-16 rounded-full object-cover"
+            />
+            <input type="file" onChange={(e) => setAvatarFile(e.target.files?.[0] || null)} />
+            <button onClick={handleUploadAvatar} className="bg-lime-400 text-black px-3 py-1 rounded">
+              Upload
+            </button>
           </div>
-          <div className="flex-1 py-2 text-center text-slate-400">
-            Hoán đổi khuôn mặt video
+
+          <div className="text-sm">
+            <div>User ID: {userId}</div>
+            <div>VIP: {vip}</div>
           </div>
-        </div>
 
-{/* KHUNG PREVIEW CHUẨN THEO ẢNH */}
-<div className="mt-4 rounded-[28px] bg-[#0e0e0e] border border-[#2a2a2a] p-4 shadow-[inset_0_0_40px_rgba(0,0,0,0.85)]">
-  <div className="relative grid grid-cols-2 gap-4 rounded-[22px] bg-[#0b0b0b] p-4 border border-[#1f1f1f]">
-    
-    {/* ẢNH GỐC */}
-    <div className="h-[180px] rounded-[18px] bg-black flex items-center justify-center text-[#9ca3af] text-sm border border-[#1f1f1f]">
-      Ảnh gốc của bạn
-    </div>
+          <div className="space-y-2">
 
-    {/* ẢNH MUỐN THAY */}
-    <div className="h-[180px] rounded-[18px] bg-black flex items-center justify-center text-[#9ca3af] text-sm border border-[#1f1f1f]">
-      Ảnh muốn thay mặt
-    </div>
+  <button
+    onClick={handleCreateUserId}
+    className="w-full bg-lime-400 text-black py-2 rounded"
+  >
+    Tạo User ID
+  </button>
 
-    {/* AVATAR TRÒN GIỮA */}
-<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none">
+  <input
+    value={userId}
+    onChange={(e) => setUserId(e.target.value)}
+    placeholder="Nhập User ID"
+    className="w-full p-2 rounded bg-[#222]"
+  />
 
-  {/* Vòng tròn rỗng viền mỏng */}
-  <div className="w-[50px] h-[50px] rounded-full bg-transparent border border-lime-400 flex items-center justify-center text-lime-400 text-[11px] font-medium shadow-none">
-    ❄️
-  </div>
-
-  {/* Mũi tên như ảnh */}
-  <svg width="22" height="12" viewBox="0 0 26 14" className="mt-0.5">
-    <path d="M1 7H22M22 7L18 3M22 7L18 11" 
-      stroke="#A3FF00" 
-      strokeWidth="1.5" 
-      strokeLinecap="round" 
-      strokeLinejoin="round"
-    />
-  </svg>
+  <button
+    onClick={handleConfirmUserId}
+    className="w-full bg-sky-400 text-black py-2 rounded"
+  >
+    Xác nhận User ID
+  </button>
 
 </div>
 
-        {/* STEP 1 */}
-        <div className="mt-4">
-          <div className="flex items-center gap-2 mb-1">
-            <div className="h-6 w-6 rounded-full bg-lime-400 text-black text-xs flex items-center justify-center font-bold">
-              1
-            </div>
-            <span className="font-semibold text-sm">
-              Tải lên hình ảnh gốc có khuôn mặt
-            </span>
+          <input
+            className="w-full p-2 rounded bg-[#222]"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+
+          <input
+            className="w-full p-2 rounded bg-[#222]"
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+
+          <div className="flex gap-2">
+            <button onClick={handleRegister} className="flex-1 bg-lime-400 text-black py-2 rounded">
+              Register
+            </button>
+            <button onClick={handleLogin} className="flex-1 bg-sky-400 text-black py-2 rounded">
+              Login
+            </button>
           </div>
 
-          <label className="block bg-lime-400 text-black font-semibold rounded-full py-2 text-center cursor-pointer">
-            Tải lên hình ảnh ↑
+          <div className="flex gap-2">
+            <button onClick={handleSendOTP} className="flex-1 bg-yellow-400 text-black py-2 rounded">
+              Send OTP
+            </button>
             <input
-              type="file"
-              hidden
-              accept="image/*"
-              onChange={(e) => setSourceFile(e.target.files?.[0] || null)}
+              className="flex-1 p-2 rounded bg-[#222]"
+              placeholder="OTP"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
             />
-          </label>
-          <div className="text-[11px] text-slate-400 mt-1">
-            PNG / JPG / JPEG / WEBP / GIF
-          </div>
-        </div>
-
-        {/* STEP 2 */}
-        <div className="mt-4">
-          <div className="flex items-center gap-2 mb-1">
-            <div className="h-6 w-6 rounded-full bg-lime-400 text-black text-xs flex items-center justify-center font-bold">
-              2
-            </div>
-            <span className="font-semibold text-sm">
-              Tải lên ảnh khuôn mặt
-            </span>
+            <button onClick={handleVerifyOTP} className="bg-emerald-400 text-black px-3 rounded">
+              Verify
+            </button>
           </div>
 
-          <label className="block bg-lime-400 text-black font-semibold rounded-full py-2 text-center cursor-pointer">
-            Tải lên hình ảnh ↑
-            <input
-              type="file"
-              hidden
-              accept="image/*"
-              onChange={(e) => setTargetFile(e.target.files?.[0] || null)}
-            />
-          </label>
-          <div className="text-[11px] text-slate-400 mt-1">
-            PNG / JPG / JPEG / WEBP
-          </div>
-        </div>
-
-        {/* STEP 3 */}
-        <div className="mt-4">
-          <div className="flex items-center gap-2 mb-1">
-            <div className="h-6 w-6 rounded-full bg-lime-400 text-black text-xs flex items-center justify-center font-bold">
-              3
-            </div>
-            <span className="font-semibold text-sm">
-              Bắt đầu hoán đổi khuôn mặt
-            </span>
-          </div>
-
-          <button className="w-full bg-lime-400 text-black font-bold py-3 rounded-full mt-1">
-            Hoán đổi khuôn mặt →
+          <button
+            onClick={handleDeleteAccount}
+            className="w-full bg-red-500 py-2 rounded font-bold"
+          >
+            XÓA TÀI KHOẢN
           </button>
 
-          <div className="text-[11px] text-slate-400 mt-1">
-            Hạn ngạch miễn phí hàng ngày còn lại: Hình ảnh: 10
-          </div>
+          {error && <div className="text-red-400 text-sm">{error}</div>}
         </div>
-
-
-        {/* FOOTER */}
-        <footer className="mt-5 text-[10px] text-center text-slate-400">
-          ZenitSwap © 2025  
-          Zalo: 085.684.8557 / Email: huuxhoang@gmail.com
-        </footer>
       </main>
     </div>
   );
