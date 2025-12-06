@@ -118,35 +118,38 @@ const handleConfirmUserId = async () => {
   };
 
   // ================= LOGIN =================
-  const handleLogin = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+const handleLogin = async () => {
+  try {
+    setLoading(true);
+    setError(null);
 
-      const res = await fetch(`${API_URL}/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+    const res = await fetch(`${API_URL}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
 
-      const data = await res.json();
+    const data = await res.json();
 
-      if (!res.ok) {
-        throw new Error(data?.detail || "Login failed");
-      }
-
-      const uid = data?.user_id || data?.id;
-      if (!uid) throw new Error("Không nhận được user_id");
-
-      localStorage.setItem("faceswap_user_id", uid);
-      setUserId(uid);
-      location.reload();
-    } catch (e: any) {
-      setError(e?.message || "Lỗi đăng nhập");
-    } finally {
-      setLoading(false);
+    if (!res.ok) {
+      throw new Error(data?.detail || "Login failed");
     }
-  };
+
+    // ✅ FIX TẠI ĐÂY
+    if (!data?.user_id) {
+      throw new Error("Backend không trả user_id");
+    }
+
+    localStorage.setItem("faceswap_user_id", data.user_id);
+    setUserId(data.user_id);
+    location.reload();
+
+  } catch (e: any) {
+    setError(e?.message || "Lỗi đăng nhập");
+  } finally {
+    setLoading(false);
+  }
+};
 
   // ================= SEND OTP =================
   const handleSendOTP = async () => {
