@@ -59,7 +59,7 @@ const handleConfirmUserId = async () => {
 
   const userData = await res.json(); // ✅ ĐỔI TÊN data -> userData
 
-  localStorage.setItem("user_id", userId);
+  localStorage.setItem("faceswap_user_id", userId);
   setCredits(userData.credits);
 
   alert("Đã đồng bộ User ID thành công");
