@@ -48,23 +48,22 @@ useEffect(() => {
 }, []);
 
 const handleConfirmUserId = async () => {
-    const res = await fetch(`${API_URL}/me?user_id=${userId}`);
+  const res = await fetch(
+    `https://faceswap-backend-clean.fly.dev/me?user_id=${userId}`
+  );
 
-    if (!res.ok) {
-      alert("User ID không tồn tại");
-      return;
-    }
+  if (!res.ok) {
+    alert("User ID không tồn tại");
+    return;
+  }
 
-    const data = await res.json();
+  const userData = await res.json(); // ✅ ĐỔI TÊN data -> userData
 
-    const data = await res.json();
+  localStorage.setItem("user_id", userId);
+  setCredits(userData.credits);
 
-    // 👉 LƯU LẠI USER ID HỢP LỆ
-    localStorage.setItem("faceswap_user_id", userId);
-    setCredits(data.credits);
-
-    alert("Đã đồng bộ User ID thành công");
-  };
+  alert("Đã đồng bộ User ID thành công");
+};
 
   // ================= LOAD PROFILE =================
   useEffect(() => {
