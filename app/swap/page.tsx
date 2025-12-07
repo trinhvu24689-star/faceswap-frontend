@@ -39,16 +39,18 @@ const handleSwap = async () => {
   form.append("source_image", sourceFile);
   form.append("target_image", targetFile);
 
-  const res = await fetch(
-    "https://faceswap-backend-clean.fly.dev/faceswap/full",
-    {
-      method: "POST",
-      headers: {
-        "x-user-id": localStorage.getItem("user_id") || "",
-      },
-      body: form,
-    }
-  );
+const userId = localStorage.getItem("faceswap_user_id") || "";
+
+const res = await fetch(
+  "https://faceswap-backend-clean.fly.dev/faceswap/full",
+  {
+    method: "POST",
+    headers: {
+      "x-user-id": userId,
+    },
+    body: form,
+  }
+);
 
 
   const blob = await res.blob();

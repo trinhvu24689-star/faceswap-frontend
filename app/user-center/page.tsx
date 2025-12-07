@@ -48,16 +48,18 @@ useEffect(() => {
 }, []);
 
 const handleConfirmUserId = async () => {
-  const res = await fetch(
-    `https://faceswap-backend-clean.fly.dev/me?user_id=${userId}`
-  );
+  const res = await fetch(`https://faceswap-backend-clean.fly.dev/credits`, {
+    headers: {
+      "x-user-id": userId,
+    },
+  });
 
   if (!res.ok) {
     alert("User ID không tồn tại");
     return;
   }
 
-  const userData = await res.json(); // ✅ ĐỔI TÊN data -> userData
+  const userData = await res.json();
 
   localStorage.setItem("faceswap_user_id", userId);
   setCredits(userData.credits);
