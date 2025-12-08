@@ -37,20 +37,23 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
 
-        {/* ✅ GIỮ PAGE TRANSITION */}
+        {/* ⭐ NỀN ĐỘNG NHẸ NHÀNG */}
+        <div className="fixed inset-0 -z-50 bg-[url('/bg.webp')] bg-cover bg-center opacity-[0.09] animate-bg-pan" />
+
+        {/* ⭐ GIỮ PAGE TRANSITION */}
         <PageTransition />
 
-        {/* ✅ HEADER MENU CỐ ĐỊNH */}
+        {/* ⭐ HEADER MENU CỐ ĐỊNH */}
         <header className="w-full flex justify-end p-4 fixed top-0 right-0 z-50">
           <HamburgerMenu />
         </header>
 
-        {/* ✅ PADDING TOP */}
+        {/* ⭐ GIỮ PADDING TOP */}
         <div className="pt-14">
           {children}
         </div>
 
-        {/* ✅ GIỮ AIBUBBLE */}
+        {/* ⭐ GIỮ AIBUBBLE */}
         <AIBubble />
 
       </body>
