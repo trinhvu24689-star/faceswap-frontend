@@ -20,40 +20,52 @@ const CREDIT_PACKS = [
   { id: "pack_10000", label: "Gói 10.000❄️", credits: 10000, price: "5.000.000đ" },
 ];
 
-
 export default function SwapPage() {
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [targetFile, setTargetFile] = useState<File | null>(null);
   const [sourcePreview, setSourcePreview] = useState<string | null>(null);
   const [targetPreview, setTargetPreview] = useState<string | null>(null);
   const [resultImg, setResultImg] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-
-const handleSwap = async () => {
-  if (!sourceFile || !targetFile) {
-    alert("Thiếu ảnh");
-    return;
-  }
-
-  const form = new FormData();
-  form.append("source_image", sourceFile);
-  form.append("target_image", targetFile);
-
-  const res = await fetch(
-    "https://faceswap-backend-clean.fly.dev/faceswap/full",
-    {
-      method: "POST",
-      headers: {
-        "x-user-id": localStorage.getItem("user_id") || "",
-      },
-      body: form,
+  // ✅ FIX HOÀN TOÀN LOGIC HOÁN ĐỔI (KHÔNG USER – KHÔNG HEADER)
+  const handleSwap = async () => {
+    if (!sourceFile || !targetFile) {
+      alert("Vui lòng chọn đủ 2 ảnh");
+      return;
     }
-  );
 
+    setLoading(true);
+    setResultImg(null);
 
-  const blob = await res.blob();
-  setResultImg(URL.createObjectURL(blob));
-};
+    try {
+      const form = new FormData();
+      form.append("source_image", sourceFile);
+      form.append("target_image", targetFile);
+
+      const res = await fetch(
+        "https://faceswap-backend-clean.fly.dev/faceswap/full",
+        {
+          method: "POST",
+          body: form,
+        }
+      );
+
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err);
+      }
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      setResultImg(url);
+    } catch (e) {
+      console.error("SWAP ERROR:", e);
+      alert("Lỗi hoán đổi khuôn mặt!");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="relative flex justify-center bg-[#0b0b0b] min-h-screen text-white">
@@ -108,38 +120,25 @@ const handleSwap = async () => {
   )}
 </div>
 
+{/* ẢNH KẾT QUẢ (ĐÈ LÊN MID) */}
+{resultImg && (
+  <img
+    src={resultImg}
+    className="absolute inset-0 w-full h-full object-contain rounded-[18px]"
+  />
+)}
+
     {/* AVATAR TRÒN GIỮA */}
 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none">
 
-{/* Vòng tròn rỗng viền mỏng */}
   <div className="w-[55px] h-[55px] rounded-full bg-transparent border-[3px] border-lime-400 flex items-center justify-center text-lime-400 text-[19px] font-medium shadow-[0_0_18px_rgba(163,255,0,0.85)]">
     ❄️
   </div>
 
-{/* Mũi tên cong như ảnh */}
 <svg width="28" height="18" viewBox="0 0 36 18" className="mt-1">
-  <path
-    d="M2 9C10 3, 26 3, 34 9"
-    fill="none"
-    stroke="#A3FF00"
-    strokeWidth="2.8"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  />
-  <path
-    d="M34 9 L28 4"
-    stroke="#A3FF00"
-    strokeWidth="2.8"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  />
-  <path
-    d="M34 9 L28 14"
-    stroke="#A3FF00"
-    strokeWidth="2.8"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  />
+  <path d="M2 9C10 3, 26 3, 34 9" fill="none" stroke="#A3FF00" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
+  <path d="M34 9 L28 4" stroke="#A3FF00" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
+  <path d="M34 9 L28 14" stroke="#A3FF00" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
 </svg>
 
 </div>
@@ -164,11 +163,11 @@ const handleSwap = async () => {
               hidden
               accept="image/*"
               onChange={(e) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
-  setSourceFile(file);
-  setSourcePreview(URL.createObjectURL(file));
-}}
+                const file = e.target.files?.[0];
+                if (!file) return;
+                setSourceFile(file);
+                setSourcePreview(URL.createObjectURL(file));
+              }}
             />
           </label>
           <div className="text-[11px] text-slate-400 mt-1">
@@ -194,11 +193,11 @@ const handleSwap = async () => {
               hidden
               accept="image/*"
               onChange={(e) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
-  setTargetFile(file);
-  setTargetPreview(URL.createObjectURL(file));
-}}
+                const file = e.target.files?.[0];
+                if (!file) return;
+                setTargetFile(file);
+                setTargetPreview(URL.createObjectURL(file));
+              }}
             />
           </label>
           <div className="text-[11px] text-slate-400 mt-1">
@@ -217,17 +216,18 @@ const handleSwap = async () => {
             </span>
           </div>
 
-          <button
-            onClick={handleSwap}
-            className="w-full bg-lime-400 text-black font-bold py-3 rounded-full mt-1">
-            Hoán đổi khuôn mặt →
-          </button>
+<button
+  onClick={handleSwap}
+  disabled={loading}
+  className="w-full bg-lime-400 text-black font-bold py-3 rounded-full mt-1 disabled:opacity-50"
+>
+  {loading ? "Đang hoán đổi..." : "Hoán đổi khuôn mặt →"}
+</button>
 
           <div className="text-[11px] text-slate-400 mt-1">
             Hạn ngạch miễn phí hàng ngày còn lại: Hình ảnh: 10
           </div>
         </div>
-
 
         {/* FOOTER */}
         <footer className="mt-5 text-[10px] text-center text-slate-400">
