@@ -27,8 +27,8 @@ export default function SwapPage() {
   const [targetPreview, setTargetPreview] = useState<string | null>(null);
   const [resultImg, setResultImg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [slider, setSlider] = useState(50);
 
-  // ✅ FIX HOÀN TOÀN LOGIC HOÁN ĐỔI (KHÔNG USER – KHÔNG HEADER)
   const handleSwap = async () => {
     if (!sourceFile || !targetFile) {
       alert("Vui lòng chọn đủ 2 ảnh");
@@ -37,6 +37,7 @@ export default function SwapPage() {
 
     setLoading(true);
     setResultImg(null);
+    setSlider(50);
 
     try {
       const form = new FormData();
@@ -98,11 +99,10 @@ export default function SwapPage() {
           </div>
         </div>
 
-{/* KHUNG PREVIEW CHUẨN THEO ẢNH */}
+{/* KHUNG PREVIEW */}
 <div className="mt-4 rounded-[28px] bg-[#0e0e0e] border border-[#2a2a2a] p-4 shadow-[inset_0_0_40px_rgba(0,0,0,0.85)]">
   <div className="relative grid grid-cols-2 gap-4 rounded-[22px] bg-[#0b0b0b] p-4 border border-[#1f1f1f]">
-    
-{/* ẢNH GỐC */}
+
 <div className="h-[180px] rounded-[18px] bg-black flex items-center justify-center border border-[#1f1f1f] overflow-hidden">
   {sourcePreview ? (
     <img src={sourcePreview} className="w-full h-full object-cover" />
@@ -111,7 +111,6 @@ export default function SwapPage() {
   )}
 </div>
 
-{/* ẢNH MUỐN THAY */}
 <div className="h-[180px] rounded-[18px] bg-black flex items-center justify-center border border-[#1f1f1f] overflow-hidden">
   {targetPreview ? (
     <img src={targetPreview} className="w-full h-full object-cover" />
@@ -120,121 +119,55 @@ export default function SwapPage() {
   )}
 </div>
 
-{/* ẢNH KẾT QUẢ (ĐÈ LÊN MID) */}
+{/* SO SÁNH KÉO */}
 {resultImg && (
-  <img
-    src={resultImg}
-    className="absolute inset-0 w-full h-full object-contain rounded-[18px]"
-  />
+  <div className="absolute inset-0 rounded-[18px] overflow-hidden z-10">
+    <img src={resultImg} className="absolute inset-0 w-full h-full object-contain" />
+    <div className="absolute inset-0 overflow-hidden" style={{ width: slider + "%" }}>
+      <img src={targetPreview ?? ""} className="w-full h-full object-contain" />
+    </div>
+    <input
+      type="range"
+      min={0}
+      max={100}
+      value={slider}
+      onChange={(e) => setSlider(Number(e.target.value))}
+      className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-20"
+    />
+    <div
+      className="absolute top-0 bottom-0 w-[2px] bg-lime-400 shadow-[0_0_10px_#A3FF00]"
+      style={{ left: slider + "%" }}
+    />
+  </div>
 )}
 
-    {/* AVATAR TRÒN GIỮA */}
+{/* AVATAR + SPINNER */}
 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none">
-
-  <div className="w-[55px] h-[55px] rounded-full bg-transparent border-[3px] border-lime-400 flex items-center justify-center text-lime-400 text-[19px] font-medium shadow-[0_0_18px_rgba(163,255,0,0.85)]">
+  <div className="relative w-[55px] h-[55px] rounded-full bg-transparent border-[3px] border-lime-400 flex items-center justify-center text-lime-400 text-[19px] font-medium shadow-[0_0_18px_rgba(163,255,0,0.85)]">
     ❄️
+    {loading && (
+      <div className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-black animate-spin"></div>
+    )}
   </div>
-
-<svg width="28" height="18" viewBox="0 0 36 18" className="mt-1">
-  <path d="M2 9C10 3, 26 3, 34 9" fill="none" stroke="#A3FF00" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
-  <path d="M34 9 L28 4" stroke="#A3FF00" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
-  <path d="M34 9 L28 14" stroke="#A3FF00" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
-</svg>
+</div>
 
 </div>
 </div>
-</div>
-
-        {/* STEP 1 */}
-        <div className="mt-4">
-          <div className="flex items-center gap-2 mb-1">
-            <div className="h-6 w-6 rounded-full bg-lime-400 text-black text-xs flex items-center justify-center font-bold">
-              1
-            </div>
-            <span className="font-semibold text-sm">
-              Tải lên hình ảnh gốc có khuôn mặt
-            </span>
-          </div>
-
-          <label className="block bg-lime-400 text-black font-semibold rounded-full py-2 text-center cursor-pointer">
-            Tải lên hình ảnh ↑
-            <input
-              type="file"
-              hidden
-              accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                setSourceFile(file);
-                setSourcePreview(URL.createObjectURL(file));
-              }}
-            />
-          </label>
-          <div className="text-[11px] text-slate-400 mt-1">
-            PNG / JPG / JPEG / WEBP / GIF
-          </div>
-        </div>
-
-        {/* STEP 2 */}
-        <div className="mt-4">
-          <div className="flex items-center gap-2 mb-1">
-            <div className="h-6 w-6 rounded-full bg-lime-400 text-black text-xs flex items-center justify-center font-bold">
-              2
-            </div>
-            <span className="font-semibold text-sm">
-              Tải lên ảnh khuôn mặt
-            </span>
-          </div>
-
-          <label className="block bg-lime-400 text-black font-semibold rounded-full py-2 text-center cursor-pointer">
-            Tải lên hình ảnh ↑
-            <input
-              type="file"
-              hidden
-              accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                setTargetFile(file);
-                setTargetPreview(URL.createObjectURL(file));
-              }}
-            />
-          </label>
-          <div className="text-[11px] text-slate-400 mt-1">
-            PNG / JPG / JPEG / WEBP
-          </div>
-        </div>
-
-        {/* STEP 3 */}
-        <div className="mt-4">
-          <div className="flex items-center gap-2 mb-1">
-            <div className="h-6 w-6 rounded-full bg-lime-400 text-black text-xs flex items-center justify-center font-bold">
-              3
-            </div>
-            <span className="font-semibold text-sm">
-              Bắt đầu hoán đổi khuôn mặt
-            </span>
-          </div>
 
 <button
   onClick={handleSwap}
   disabled={loading}
-  className="w-full bg-lime-400 text-black font-bold py-3 rounded-full mt-1 disabled:opacity-50"
+  className="w-full bg-lime-400 text-black font-bold py-3 rounded-full mt-4 disabled:opacity-50"
 >
   {loading ? "Đang hoán đổi..." : "Hoán đổi khuôn mặt →"}
 </button>
 
-          <div className="text-[11px] text-slate-400 mt-1">
-            Hạn ngạch miễn phí hàng ngày còn lại: Hình ảnh: 10
-          </div>
-        </div>
+<footer className="mt-5 text-[10px] text-center text-slate-400">
+  ZenitSwap © 2025  
+  Zalo: 085.684.8557 / Email: huuxhoang@gmail.com
+</footer>
 
-        {/* FOOTER */}
-        <footer className="mt-5 text-[10px] text-center text-slate-400">
-          ZenitSwap © 2025  
-          Zalo: 085.684.8557 / Email: huuxhoang@gmail.com
-        </footer>
-      </main>
+    </main>
     </div>
   );
 }
